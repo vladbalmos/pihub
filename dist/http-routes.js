@@ -8,19 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const HttpServer_1 = __importDefault(require("../HttpServer"));
-const UDPServer_1 = __importDefault(require("../UDPServer"));
-const http_routes_1 = __importDefault(require("../http-routes"));
-(function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const httpServer = new HttpServer_1.default(3000);
-        httpServer.setRouter(http_routes_1.default);
-        yield httpServer.initialize();
-        const udpServer = new UDPServer_1.default(6000, 3000);
-        const udpAddress = yield udpServer.initialize();
-    });
-})();
+function router(app, asyncMiddleware) {
+    app.get('/', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
+        res.send('OK');
+    })));
+    app.all('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
+        console.log(req.body);
+        res.send({
+            status: 'ok'
+        });
+    })));
+}
+exports.default = router;

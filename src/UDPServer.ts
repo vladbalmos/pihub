@@ -5,12 +5,14 @@ import { networkInterfaces } from 'node:os';
 
 export default class UDPServer extends EventEmitter {
     private port: number;
+    private httpPort: number;
     private localAddress: string;
     private socket: Socket;
     
-    constructor(port: number) {
+    constructor(port: number, httpPort: number) {
         super();
         this.port = port;
+        this.httpPort = httpPort;
         this.socket = dgram.createSocket('udp4');
         this.localAddress = '0.0.0.0';
     }
@@ -20,25 +22,15 @@ export default class UDPServer extends EventEmitter {
             this.emit('error', e);
         });
         
-        this.socket.on('message', (msg, rinfo: RemoteInfo) => {
-            let message: any;
-            
-            try {
-                message = JSON.parse(msg.toString());
-            } catch (e:any) {
-                console.error(e);
+        this.socket.on('message', (msg: Buffer, rinfo: RemoteInfo) => {
+            const strmsg = msg.toString();
+            if (strmsg !== 'request:whereareyou') {
+                console.warn("Invalid message:", strmsg);
                 return;
             }
             
-            if (!message || message.question !== 'whereareyou') {
-                console.warn("Invalid message:", JSON.stringify(message));
-                return;
-            }
-            
-            const response = JSON.stringify({
-                answer: this.localAddress
-            });
-            console.log(message);
+            const response = `hub@:${this.localAddress}:${this.httpPort}`;
+            console.log(strmsg);
             console.log(rinfo);
             this.socket.send(response, 0, response.length, rinfo.port, rinfo.address);
         });

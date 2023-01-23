@@ -16,9 +16,10 @@ const node_dgram_1 = __importDefault(require("node:dgram"));
 const node_stream_1 = require("node:stream");
 const node_os_1 = require("node:os");
 class UDPServer extends node_stream_1.EventEmitter {
-    constructor(port) {
+    constructor(port, httpPort) {
         super();
         this.port = port;
+        this.httpPort = httpPort;
         this.socket = node_dgram_1.default.createSocket('udp4');
         this.localAddress = '0.0.0.0';
     }
@@ -27,22 +28,13 @@ class UDPServer extends node_stream_1.EventEmitter {
             this.emit('error', e);
         });
         this.socket.on('message', (msg, rinfo) => {
-            let message;
-            try {
-                message = JSON.parse(msg.toString());
-            }
-            catch (e) {
-                console.error(e);
+            const strmsg = msg.toString();
+            if (strmsg !== 'request:whereareyou') {
+                console.warn("Invalid message:", strmsg);
                 return;
             }
-            if (!message || message.question !== 'whereareyou') {
-                console.warn("Invalid message:", JSON.stringify(message));
-                return;
-            }
-            const response = JSON.stringify({
-                answer: this.localAddress
-            });
-            console.log(message);
+            const response = `hub@:${this.localAddress}:${this.httpPort}`;
+            console.log(strmsg);
             console.log(rinfo);
             this.socket.send(response, 0, response.length, rinfo.port, rinfo.address);
         });
