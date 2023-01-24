@@ -1,8 +1,10 @@
 import HttpServer from "../HttpServer";
 import UDPServer from "../UDPServer";
 import router from "../http-routes";
+import DeviceManager from "../DeviceManager";
 
 (async function run(): Promise<void> {
+    
     const httpServer = new HttpServer(3000);
     httpServer.setRouter(router);
     await httpServer.initialize();

@@ -1,4 +1,5 @@
 import { Application, Request, Response } from "express";
+import DeviceManager from "./DeviceManager";
 
 export default function router(app: Application, asyncMiddleware: CallableFunction) {
     

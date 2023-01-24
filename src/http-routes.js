@@ -14,6 +14,9 @@ function router(app, asyncMiddleware) {
         res.send('OK');
     })));
     app.all('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
+        // Write features to ../data/devices.json
+        // serialize writes
+        // create responsive template
         console.log(req.body);
         res.send({
             status: 'ok'
