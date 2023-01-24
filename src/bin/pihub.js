@@ -15,12 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const HttpServer_1 = __importDefault(require("../HttpServer"));
 const UDPServer_1 = __importDefault(require("../UDPServer"));
 const http_routes_1 = __importDefault(require("../http-routes"));
+const config_1 = __importDefault(require("../config"));
+const DeviceManager_1 = __importDefault(require("../DeviceManager"));
 (function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const httpServer = new HttpServer_1.default(3000);
+        DeviceManager_1.default.init({
+            datadir: config_1.default.datadir
+        });
+        const httpServer = new HttpServer_1.default(config_1.default.http.port);
         httpServer.setRouter(http_routes_1.default);
         yield httpServer.initialize();
-        const udpServer = new UDPServer_1.default(6000, 3000);
+        const udpServer = new UDPServer_1.default(config_1.default.udp.port, config_1.default.http.port);
         const udpAddress = yield udpServer.initialize();
     });
 })();

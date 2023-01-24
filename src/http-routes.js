@@ -8,19 +8,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const DeviceManager_1 = __importDefault(require("./DeviceManager"));
 function router(app, asyncMiddleware) {
     app.get('/', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
-        res.send('OK');
+        const devices = DeviceManager_1.default.inst.all();
+        // Create a partial for each type of feature - toggle, list
+        return res.render('index', {
+            test: 'test'
+        });
     })));
     app.all('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
-        // Write features to ../data/devices.json
-        // serialize writes
-        // create responsive template
-        console.log(req.body);
-        res.send({
-            status: 'ok'
-        });
+        DeviceManager_1.default.inst.register(req.body.id, req.body.name, req.body.features);
+        console.log("Registered", req.body.id);
+        res.send();
     })));
 }
 exports.default = router;

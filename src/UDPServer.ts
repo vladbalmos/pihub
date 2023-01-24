@@ -30,8 +30,6 @@ export default class UDPServer extends EventEmitter {
             }
             
             const response = `hub@:${this.localAddress}:${this.httpPort}`;
-            console.log(strmsg);
-            console.log(rinfo);
             this.socket.send(response, 0, response.length, rinfo.port, rinfo.address);
         });
         

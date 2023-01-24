@@ -1,14 +1,19 @@
 import HttpServer from "../HttpServer";
 import UDPServer from "../UDPServer";
 import router from "../http-routes";
+import config from "../config";
 import DeviceManager from "../DeviceManager";
 
 (async function run(): Promise<void> {
     
-    const httpServer = new HttpServer(3000);
+    DeviceManager.init({
+        datadir: config.datadir
+    })
+    
+    const httpServer = new HttpServer(config.http.port);
     httpServer.setRouter(router);
     await httpServer.initialize();
 
-    const udpServer = new UDPServer(6000, 3000);
+    const udpServer = new UDPServer(config.udp.port, config.http.port);
     const udpAddress = await udpServer.initialize();
 })();

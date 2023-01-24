@@ -4,16 +4,17 @@ import DeviceManager from "./DeviceManager";
 export default function router(app: Application, asyncMiddleware: CallableFunction) {
     
     app.get('/', asyncMiddleware(async (_: Request, res: Response) => {
-        res.send('OK');
+        const devices = DeviceManager.inst.all();
+        // Create a partial for each type of feature - toggle, list
+        
+        return res.render('index', {
+            test: 'test'
+        });
     }));
     
     app.all('/device/reg', asyncMiddleware(async (req: Request, res: Response) => {
-        // Write features to ../data/devices.json
-        // serialize writes
-        // create responsive template
-        console.log(req.body);
-        res.send({
-            status: 'ok'
-        });
+        DeviceManager.inst.register(req.body.id, req.body.name, req.body.features);
+        console.log("Registered", req.body.id);
+        res.send();
     }));
 }

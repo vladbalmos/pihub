@@ -6,18 +6,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = require("http");
 const express_1 = __importDefault(require("express"));
 const events_1 = __importDefault(require("events"));
+const ejs = require('ejs');
 class HttpServer extends events_1.default {
     constructor(port) {
         super();
         const app = (0, express_1.default)();
         this.app = app;
         this.port = port;
+        this.baseUrl = `http://localhost:${port}`;
         this.initExpressApp();
     }
     initExpressApp() {
         this.app.set('port', this.port);
         this.app.set('view engine', 'ejs');
-        this.app.set('views', `${__dirname}/../src/views`);
+        this.app.set('views', `${__dirname}/views`);
+        this.app.engine('ejs', (path, data, cb) => {
+            data.baseUrl = this.baseUrl;
+            data.publicUrl = `${this.baseUrl}/public`;
+            data.asset = (url) => {
+                return `${data.publicUrl}/${url}`;
+            };
+            ejs.renderFile(path, data, cb);
+        });
+        this.app.use('/public', express_1.default.static(`${__dirname}/../public`));
         this.app.use(express_1.default.json());
         this.app.use(express_1.default.urlencoded());
     }

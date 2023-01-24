@@ -34,8 +34,6 @@ class UDPServer extends node_stream_1.EventEmitter {
                 return;
             }
             const response = `hub@:${this.localAddress}:${this.httpPort}`;
-            console.log(strmsg);
-            console.log(rinfo);
             this.socket.send(response, 0, response.length, rinfo.port, rinfo.address);
         });
         return new Promise((resolve, reject) => {
