@@ -13,12 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const DeviceManager_1 = __importDefault(require("./DeviceManager"));
+const UIBuilder_1 = __importDefault(require("./UIBuilder"));
 function router(app, asyncMiddleware) {
     app.get('/', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
         const devices = DeviceManager_1.default.inst.all();
-        // Create a partial for each type of feature - toggle, list
+        const uiBuilder = new UIBuilder_1.default({
+            viewsPath: `${app.get('views')}`,
+            partialsPrefix: 'device-control-partials'
+        });
+        const deviceViews = yield uiBuilder.build(devices);
         return res.render('index', {
-            test: 'test'
+            deviceViews
         });
     })));
     app.all('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {

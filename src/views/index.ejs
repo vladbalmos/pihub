@@ -1,3 +1,21 @@
 <%- include('layout/top') %>
+
+<% for (const dv of deviceViews) { %>
+    <div class="row">
+        <h5>
+            <%= dv.name %>
+        </h5>
+        <p>Last seen:  <%= dv.lastSeen %></p>
+        <div class="grid text-left">
+            <% for (const v of dv.views) { %>
+                <div class="g-col-6">
+                    <%- v %>
+                </div>
+                <% } %>
+        </div>
+
+    </div>
+    <% } %>
+
 <script src="<%= asset('js/index.js'); %>"></script>
 <%- include('layout/bottom') %>

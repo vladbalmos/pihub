@@ -1,0 +1,20 @@
+<%
+    switchValue = null;
+    checked = ''
+    if (typeof value !== 'undefined') {
+        switchValue = value;
+    } else {
+        switchValue = typeof schema.default !== 'undefined' ? schema.default : null;
+    }
+    
+    if (switchValue !== null) {
+        switchValue = parseInt(switchValue, 10);
+        checked = switchValue ? 'checked' : checked;
+    }
+    
+    pendingChange = typeof pendingChange !== 'undefined' ? pendingChange : false;
+    console.log(pendingChange);
+    disabled = pendingChange ? 'disabled' : '';
+%>
+<input <%= disabled %> data-control-type="switch" data-did="<%= did %>" data-fid="<%= id %>" class="btn-check" type="checkbox" role="switch" id="<%= featureId(id); %>" <%- checked %>>
+<label class="btn btn-outline-danger m-1" for="<%= featureId(id); %>"><%= name %></label>

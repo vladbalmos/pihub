@@ -25,8 +25,14 @@ class DeviceManager {
     all() {
         const devices = [];
         this.devices.forEach((device) => {
-            const state = this.createDefaultState(device.features);
+            devices.push({
+                state: device.state,
+                id: device.id,
+                name: device.name,
+                lastSeen: device.lastSeen
+            });
         });
+        return devices;
     }
     loadDevices() {
         let data;
@@ -64,17 +70,16 @@ class DeviceManager {
     }
     register(id, name, features) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.savingState;
-            if (!this.devices.has(id)) {
-                this.add(id, name, features);
-            }
-            else {
-                this.update(id, {
-                    name,
-                    features
-                });
-            }
-            return this.save();
+            // await this.savingState;
+            // if (!this.devices.has(id)) {
+            //     this.add(id, name, features);
+            // } else {
+            //     this.update(id, {
+            //         name,
+            //         features
+            //     });
+            // }
+            // return this.save();
         });
     }
     defaultValue(feature) {

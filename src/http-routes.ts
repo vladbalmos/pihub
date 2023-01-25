@@ -1,14 +1,20 @@
 import { Application, Request, Response } from "express";
 import DeviceManager from "./DeviceManager";
+import UIBuilder from "./UIBuilder";
 
 export default function router(app: Application, asyncMiddleware: CallableFunction) {
     
     app.get('/', asyncMiddleware(async (_: Request, res: Response) => {
         const devices = DeviceManager.inst.all();
-        // Create a partial for each type of feature - toggle, list
         
+        const uiBuilder = new UIBuilder({
+            viewsPath: `${app.get('views')}`,
+            partialsPrefix: 'device-control-partials'
+        })
+        const deviceViews = await uiBuilder.build(devices);
+
         return res.render('index', {
-            test: 'test'
+            deviceViews
         });
     }));
     
