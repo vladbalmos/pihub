@@ -1,0 +1,14 @@
+<h6><%= name %></h6>
+
+<div>
+    <select class="form-select" <%= el_multiple %> data-control-type="list" data-did="<%= did %>" data-fid="<%= id %>" id="<%= featureId(id); %>">
+        <% for (const v of schema.valid_values) { %>
+            <%
+                selected = (value.indexOf(v) !== -1) ? 'selected' : '';
+            %>
+            <option value="<%= v %>" <%= selected %>><%= v %></option>
+        <% } %>
+    </select>
+</div>
+    
+<button data-operator="set" data-role="list-control" data-target="<%= featureId(id); %>" type="button" class="btn btn-primary d-block w-100 mt-1 mb-1">Set</button>

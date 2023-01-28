@@ -9,14 +9,14 @@ export default class HttpServer extends EventEmitter {
     private baseUrl: string;
     private app: express.Application;
     
-    constructor(port: number) {
+    constructor(port: number, domain: string) {
         super();
 
         const app = express();
         this.app = app;
         this.port = port;
         
-        this.baseUrl = `http://localhost:${port}`;
+        this.baseUrl = `http://${domain}:${port}`;
         
         this.initExpressApp();
     }

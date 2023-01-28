@@ -1,12 +1,48 @@
 <div>
     <h6><%= name %></h6>
+    
+    
+    <ul class="list-group" id="<%= featureId(id); %>_value">
+        <% for (const item of value) { %>
+            <li data-id="<%= item.id %>" class="list-group-item d-flex justify-content-between align-items-start">
+                <div><%= JSON.stringify(item); %></div>
 
-    <select class="form-select" multiple>
-        <option value="port_0">port_0</option>
-        <option value="port_1">port_1</option>
-        <option value="port_2">port_2</option>
-        <option value="port_3">port_3</option>
-        <option value="port_4">port_4</option>
-        <option value="port_5">port_5</option>
-    </select>
+                <div><a data-item-id="<%= item.id %>" data-target="<%= featureId(id); %>_value" data-operator="delete" data-role="list-control" href="#" class="text-danger"><strong<i class="bi bi-x-circle"></i></strong></a></div>
+            </li>
+        <% } %>
+    </ul>    
+
+
+    <form data-props="<%= Object.keys(schema.item).join(','); %>" data-control-type="list" data-complex="1" data-did="<%= did %>" data-fid="<%= id %>" class="row gy-2 gx-3 align-items-center" id="<%= featureId(id); %>">
+        <% for (const itemId in schema.item) { %>
+            <% 
+                const item = schema.item[itemId];
+                if (item.type === 'id') {
+                    continue 
+                }
+            %>
+            
+            <div class="col-auto">
+                <% if (item.type === 'string' && Array.isArray(item.valid_values)) { %>
+                    <label class="visually-hidden" for="<%= `${featureId(id)}_${itemId}` %>"><%= itemId %></label>
+                    <select data-prop="<%= itemId %>" class="form-select" id="<%= `${featureId(id)}_${itemId}` %>">
+                        <option value=""><%= itemId %></option>
+                        <% for (const v of item.valid_values) { %>
+                            <option value="<%= v %>"><%= v %></option>
+                        <% } %>
+                    </select>
+                <% } else if (item.type === 'cron' || item.type === 'string') { %>
+                    <label class="visually-hidden" for="<%= `${featureId(id)}_${itemId}` %>"><%= itemId %></label>
+                    <input data-prop="<%= itemId %>" type="text" class="form-control" id="<%= `${featureId(id)}_${itemId}` %>" placeholder="<%= itemId %>">
+                <% } else if (item.type === 'boolean') { %>
+                    <div class="form-check form-switch">
+                        <input data-prop="<%= itemId %>" class="form-check-input" type="checkbox" role="switch" id="<%= `${featureId(id)}_${itemId}` %>">
+                        <label class="form-check-label" for="<%= `${featureId(id)}_${itemId}` %>">On/Off</label>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+
+    </form>
+    <button data-operator="add" data-role="list-control" data-target="<%= featureId(id); %>" type="button" class="btn btn-primary d-block w-100 mt-1 mb-1">Add</button>
 </div>

@@ -32,9 +32,9 @@ class UIBuilder {
                 if (!feature.schema || !feature.schema.type) {
                     continue;
                 }
-                const partialName = this.partialName(feature.schema.type);
+                const partialName = this.partialName(feature.schema);
                 if (partialName === 'list') {
-                    console.log(feature);
+                    console.log(JSON.stringify(feature, null, 2));
                 }
                 const content = yield this.render(partialName, Object.assign(Object.assign({}, feature), { did: device.id, dname: device.name }));
                 views.push(content);
@@ -42,11 +42,15 @@ class UIBuilder {
             return Object.assign(Object.assign({}, device), { views });
         });
     }
-    partialName(schemaType) {
+    partialName(schema) {
+        const schemaType = schema.type;
         switch (schemaType) {
             case 'boolean':
                 return 'switch';
             case 'list':
+                if (schema.item === 'string') {
+                    return 'simple-list';
+                }
                 return 'list';
             default:
                 throw new Error(`Partial not implemented for ${schemaType}`);
@@ -54,6 +58,11 @@ class UIBuilder {
     }
     render(file, data = {}) {
         file = `${this.viewsPath}/${this.partialsPrefix}/${file}.ejs`;
+        if (typeof data.pendingChange === 'undefined') {
+            data.pendingChange = false;
+        }
+        data.el_disabled = (data.pendingChange) ? 'disabled' : '';
+        data.el_multiple = (data.schema.multiple) ? 'multiple' : '';
         return ejs.renderFile(file, Object.assign(Object.assign({}, data), { featureId: (id) => {
                 return `${data.did}_${id}`;
             } }), {

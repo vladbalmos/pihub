@@ -70,16 +70,17 @@ class DeviceManager {
     }
     register(id, name, features) {
         return __awaiter(this, void 0, void 0, function* () {
-            // await this.savingState;
-            // if (!this.devices.has(id)) {
-            //     this.add(id, name, features);
-            // } else {
-            //     this.update(id, {
-            //         name,
-            //         features
-            //     });
-            // }
-            // return this.save();
+            yield this.savingState;
+            if (!this.devices.has(id)) {
+                this.add(id, name, features);
+            }
+            else {
+                this.update(id, {
+                    name,
+                    features
+                });
+            }
+            return this.save();
         });
     }
     defaultValue(feature) {

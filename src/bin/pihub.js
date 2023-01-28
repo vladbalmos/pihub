@@ -22,7 +22,7 @@ const DeviceManager_1 = __importDefault(require("../DeviceManager"));
         DeviceManager_1.default.init({
             datadir: config_1.default.datadir
         });
-        const httpServer = new HttpServer_1.default(config_1.default.http.port);
+        const httpServer = new HttpServer_1.default(config_1.default.http.port, config_1.default.http.domain);
         httpServer.setRouter(http_routes_1.default);
         yield httpServer.initialize();
         const udpServer = new UDPServer_1.default(config_1.default.udp.port, config_1.default.http.port);

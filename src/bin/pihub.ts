@@ -10,7 +10,7 @@ import DeviceManager from "../DeviceManager";
         datadir: config.datadir
     })
     
-    const httpServer = new HttpServer(config.http.port);
+    const httpServer = new HttpServer(config.http.port, config.http.domain);
     httpServer.setRouter(router);
     await httpServer.initialize();
 

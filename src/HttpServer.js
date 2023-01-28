@@ -8,12 +8,12 @@ const express_1 = __importDefault(require("express"));
 const events_1 = __importDefault(require("events"));
 const ejs = require('ejs');
 class HttpServer extends events_1.default {
-    constructor(port) {
+    constructor(port, domain) {
         super();
         const app = (0, express_1.default)();
         this.app = app;
         this.port = port;
-        this.baseUrl = `http://localhost:${port}`;
+        this.baseUrl = `http://${domain}:${port}`;
         this.initExpressApp();
     }
     initExpressApp() {

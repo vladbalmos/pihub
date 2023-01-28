@@ -73,18 +73,18 @@ export default class DeviceManager {
     }
     
     async register(id: string, name: string, features: any) {
-        // await this.savingState;
+        await this.savingState;
         
-        // if (!this.devices.has(id)) {
-        //     this.add(id, name, features);
-        // } else {
-        //     this.update(id, {
-        //         name,
-        //         features
-        //     });
-        // }
+        if (!this.devices.has(id)) {
+            this.add(id, name, features);
+        } else {
+            this.update(id, {
+                name,
+                features
+            });
+        }
         
-        // return this.save();
+        return this.save();
     }
     
     defaultValue(feature) {

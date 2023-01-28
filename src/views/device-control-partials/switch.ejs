@@ -11,10 +11,6 @@
         switchValue = parseInt(switchValue, 10);
         checked = switchValue ? 'checked' : checked;
     }
-    
-    pendingChange = typeof pendingChange !== 'undefined' ? pendingChange : false;
-    console.log(pendingChange);
-    disabled = pendingChange ? 'disabled' : '';
 %>
-<input <%= disabled %> data-control-type="switch" data-did="<%= did %>" data-fid="<%= id %>" class="btn-check" type="checkbox" role="switch" id="<%= featureId(id); %>" <%- checked %>>
-<label class="btn btn-outline-danger m-1" for="<%= featureId(id); %>"><%= name %></label>
+<input <%= el_disabled %> data-control-type="switch" data-did="<%= did %>" data-fid="<%= id %>" class="btn-check" type="checkbox" role="switch" id="<%= featureId(id); %>" <%- checked %>>
+<label class="btn btn-outline-primary m-1" for="<%= featureId(id); %>"><%= name %></label>
