@@ -1,4 +1,4 @@
-<div>
+<div id="<%= featureId(id) %>_container">
     <h6><%= name %></h6>
     
     
@@ -6,7 +6,7 @@
         <% for (const item of value) { %>
             <li data-id="<%= item.id %>" class="list-group-item d-flex justify-content-between align-items-start">
                 <div><%= JSON.stringify(item); %></div>
-                <div><a <%= el_disabled %> data-item-id="<%= item.id %>" data-target="<%= featureId(id); %>_value" data-operator="delete" data-role="list-control" href="#" class="text-danger"><strong<i class="bi bi-x-circle"></i></strong></a></div>
+                <div><a <%= el_disabled %> data-container-id="<%= featureId(id) %>_container" data-item-id="<%= item.id %>" data-target="<%= featureId(id); %>_value" data-operator="delete" data-role="list-control" href="#" class="text-danger"><strong<i class="bi bi-x-circle"></i></strong></a></div>
             </li>
         <% } %>
     </ul>    

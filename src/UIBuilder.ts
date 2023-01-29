@@ -31,17 +31,22 @@ export default class UIBuilder {
                 continue;
             }
             
-            const partialName = this.partialName(feature.schema);
-            
-            const content = await this.render(partialName, {
+            views.push(await this.renderView({
                 ...feature,
                 did: device.id,
                 dname: device.name
-            })
-            views.push(content);
+            }));
         }
         
         return { ...device, views };
+    }
+    
+    
+    async renderView(data) {
+        const partialName = this.partialName(data.schema);
+
+        const content = await this.render(partialName, data);
+        return content;
     }
     
     partialName(schema) {

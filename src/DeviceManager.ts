@@ -13,6 +13,8 @@ export default class DeviceManager extends EventEmitter {
     private devices: Map<string, Device> = new Map();
     
     private savingState: Promise<void> = Promise.resolve();
+    
+    private pendingUpdates: any = {};
 
     constructor(options: DeviceManagerOptions) {
         super();
@@ -35,6 +37,36 @@ export default class DeviceManager extends EventEmitter {
         });
         
         return devices;
+    }
+    
+    getPendingUpdates() {
+        return this.pendingUpdates;
+    }
+    
+    clearPendingUpdate(key) {
+        delete this.pendingUpdates[key];
+    }
+    
+    getState(deviceId, featureId) {
+        const d = this.get(deviceId);
+        
+        if (!d) {
+            throw new Error(`Unknown device: ${deviceId}`);
+        }
+        
+        let foundFeatureState: any;
+        for (const f of d.state!) {
+            if (f.id === featureId) {
+                foundFeatureState = f;
+                break;
+            }
+        }
+        
+        if (!foundFeatureState) {
+            throw new Error(`Feature not found: ${featureId}`);
+        }
+        
+        return foundFeatureState;
     }
     
     async broadcastStateUpdateRequests() {
@@ -221,7 +253,10 @@ export default class DeviceManager extends EventEmitter {
             state.pendingChange = change.value;
             state.changeRequestedAt = new Date();
             await this.save();
+            break;
         }
+        
+        this.pendingUpdates[`${change.deviceId}:${change.featureId}`] = 'pending';
         this.emit('state:updateRequested', {
             deviceId: change.deviceId,
             featureId: change.featureId
@@ -248,12 +283,14 @@ export default class DeviceManager extends EventEmitter {
             returnValue = state.pendingChange;
             foundFeature = true;
             await this.save();
+            break;
         }
         
         if (!foundFeature) {
             throw new Error('Feature not found');
         }
         
+        this.pendingUpdates[`${deviceId}:${featureId}`] = 'in-progress';
         return returnValue;
     }
     
@@ -277,11 +314,14 @@ export default class DeviceManager extends EventEmitter {
             state.value = featureState;
             foundFeature = true;
             await this.save();
+            break;
         }
         
         if (!foundFeature) {
             throw new Error('Feature not found');
         }
+
+        this.pendingUpdates[`${deviceId}:${featureId}`] = 'completed';
     }
     
     getHash(data: any) {

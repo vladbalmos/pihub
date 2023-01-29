@@ -32,11 +32,16 @@ class UIBuilder {
                 if (!feature.schema || !feature.schema.type) {
                     continue;
                 }
-                const partialName = this.partialName(feature.schema);
-                const content = yield this.render(partialName, Object.assign(Object.assign({}, feature), { did: device.id, dname: device.name }));
-                views.push(content);
+                views.push(yield this.renderView(Object.assign(Object.assign({}, feature), { did: device.id, dname: device.name })));
             }
             return Object.assign(Object.assign({}, device), { views });
+        });
+    }
+    renderView(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const partialName = this.partialName(data.schema);
+            const content = yield this.render(partialName, data);
+            return content;
         });
     }
     partialName(schema) {

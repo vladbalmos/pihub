@@ -26,6 +26,48 @@ function router(app, asyncMiddleware) {
             deviceViews
         });
     })));
+    app.get('/status', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
+        const updatesStatus = Object.assign({}, DeviceManager_1.default.inst.getPendingUpdates());
+        for (const key in updatesStatus) {
+            const status = updatesStatus[key];
+            if (status === 'completed') {
+                DeviceManager_1.default.inst.clearPendingUpdate(key);
+            }
+        }
+        return res.json({
+            status: true,
+            result: updatesStatus
+        });
+    })));
+    app.get('/refresh', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
+        const did = req.query.did || null;
+        const fid = req.query.fid || null;
+        if (!did || !fid) {
+            return res.json({
+                status: false,
+                error: 'Missing did || fid parameters'
+            });
+        }
+        try {
+            const state = DeviceManager_1.default.inst.getState(did, fid);
+            const uiBuilder = new UIBuilder_1.default({
+                viewsPath: `${app.get('views')}`,
+                partialsPrefix: 'device-control-partials'
+            });
+            const view = yield uiBuilder.renderView(Object.assign(Object.assign({}, state), { did }));
+            return res.json({
+                status: true,
+                content: view
+            });
+        }
+        catch (e) {
+            console.error(e);
+            return res.json({
+                status: false,
+                error: e.message
+            });
+        }
+    })));
     app.all('/device/update', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
         const did = req.query.did || null;
         const fid = req.query.fid || null;
@@ -83,7 +125,6 @@ function router(app, asyncMiddleware) {
         });
     })));
     app.post('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
-        console.log(req.body);
         yield DeviceManager_1.default.inst.register(req.body.id, req.body.name, req.body.features);
         res.json({
             status: true
