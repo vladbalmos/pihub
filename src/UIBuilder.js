@@ -33,9 +33,6 @@ class UIBuilder {
                     continue;
                 }
                 const partialName = this.partialName(feature.schema);
-                if (partialName === 'list') {
-                    console.log(JSON.stringify(feature, null, 2));
-                }
                 const content = yield this.render(partialName, Object.assign(Object.assign({}, feature), { did: device.id, dname: device.name }));
                 views.push(content);
             }
@@ -58,10 +55,7 @@ class UIBuilder {
     }
     render(file, data = {}) {
         file = `${this.viewsPath}/${this.partialsPrefix}/${file}.ejs`;
-        if (typeof data.pendingChange === 'undefined') {
-            data.pendingChange = false;
-        }
-        data.el_disabled = (data.pendingChange) ? 'disabled' : '';
+        data.el_disabled = (typeof data.pendingChange !== 'undefined') ? 'disabled' : '';
         data.el_multiple = (data.schema.multiple) ? 'multiple' : '';
         return ejs.renderFile(file, Object.assign(Object.assign({}, data), { featureId: (id) => {
                 return `${data.did}_${id}`;

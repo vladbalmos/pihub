@@ -1,9 +1,49 @@
 'use strict';
 
-function changeState(deviceId, featureId, value, elId, onChangeCallback) {
+const updateCallbacks = {};
+
+async function jsonRequest(url, data = null, options = {}) {
+    options.headers = {
+        ...(options.headers || {}),
+    }
+
+    if (data) {
+        options.method = 'POST';
+        options.headers = {
+            'Content-Type': 'application/json'
+        };
+        options.body = JSON.stringify(data)
+    } else {
+        options.method = 'GET';
+    }
+    
+    try {
+        const response = await fetch(url, options);
+        return response.json();
+    } catch (e) {
+        console.error(e);
+        toastr.error('Unable change feature state');
+    }
+}
+
+async function changeState(deviceId, featureId, value, onChangeCallback) {
     // Ajax, change state (set pendingChange = 1 on state)
     // Store elId on server memory and when received new state for the device, assign the change to elId
     // and on next refresh request, return only changed elements then execute callback assigned to elId
+    
+    const updateCallbackId = `${deviceId}_${featureId}`;
+    updateCallbacks[updateCallbackId] = onChangeCallback;
+    
+    const result = await jsonRequest('/request-update', {
+        deviceId,
+        featureId,
+        value
+    })
+
+    if (!result) {
+        delete updateCallbacks[updateCallbackId];
+        onChangeCallback(new Error('Unable to request state update'));
+    }
 }
 
 function describe(el) {
@@ -40,7 +80,7 @@ function addToList(caller, formId) {
         let value;
         
         if (elTag === 'input' && elType === 'checkbox') {
-            value = el.is(':checked');
+            value = Number(el.is(':checked'));
         } else {
             value = el.val();
         }
@@ -57,11 +97,36 @@ function addToList(caller, formId) {
     elements.forEach((e) => e.prop('disabled', true));
     caller.prop('disabled', true);
     
-    changeState(did, featureId, value, formId, (data) => {
+    changeState(did, featureId, value, (err) => {
         elements.forEach((e) => e.prop('disabled', false));
         caller.prop('disabled', false);
-        // TODO: update the list with the new value
+        
+        if (!err) {
+            // TODO: update the list with the new value
+        }
     });
+}
+
+function removeFromList(caller, listId) {
+    const listEl = $(`#${listId}`);
+    const itemId = caller.data('item-id');
+    
+    const { did, featureId } = describe(listEl);
+
+    caller.attr('disabled', 'disabled');
+
+    const value = {
+        operation: 'delete',
+        value: itemId
+    };
+    
+    changeState(did, featureId, value, (err) => {
+        caller.removeAttr('disabled');
+        
+        if (!err) {
+            listEl.find(`li[data-item-id="${itemId}"]`).remove();
+        }
+    })
 }
 
 function setList(caller, listId) {
@@ -74,7 +139,7 @@ function setList(caller, listId) {
     caller.prop('disabled', true);
     listEl.prop('disabled', true);
     
-    changeState(did, featureId, values, listId, () => {
+    changeState(did, featureId, values, () => {
         caller.prop('disabled', false);
         listEl.prop('disabled', false);
     })
@@ -91,12 +156,12 @@ function bindControls() {
         e.preventDefault();
         e.stopPropagation();
         
-        const nextState = target.is(':checked');
+        const nextState = Number(target.is(':checked'));
         target.prop('disabled', true);
         
         const { did, featureId, elId } = describe(target);
 
-        changeState(did, featureId, nextState, elId, () => {
+        changeState(did, featureId, nextState, () => {
             target.prop('disabled', false);
         })
     });
@@ -123,10 +188,14 @@ function bindControls() {
     $('body').on('click', 'a', (e) => {
         const target = $(e.currentTarget);
         
+        if (target.attr('disabled')) {
+            return;
+        }
+        
         if (target.data('operator') === 'delete' && target.data('role') === 'list-control') {
             e.preventDefault();
             e.stopPropagation();
-            console.log('removing item');
+            removeFromList(target, target.data('target'));
         }
     });
     

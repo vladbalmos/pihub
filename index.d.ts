@@ -7,6 +7,6 @@ type Device = {
     id: string,
     features: object,
     featuresHash: string,
-    state: object|null,
+    state: any[]|null,
     lastSeen: Date
 }

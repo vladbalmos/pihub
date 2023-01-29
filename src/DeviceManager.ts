@@ -1,8 +1,8 @@
 import fs from 'fs';
 import { createHash, Hash } from 'crypto';
-import { resolve } from 'path';
+import EventEmitter from 'events';
 
-export default class DeviceManager {
+export default class DeviceManager extends EventEmitter {
 
     static inst: DeviceManager
     
@@ -15,9 +15,11 @@ export default class DeviceManager {
     private savingState: Promise<void> = Promise.resolve();
 
     constructor(options: DeviceManagerOptions) {
+        super();
         this.datadir = options.datadir;
         this.devicesFile = `${this.datadir}/devices.json`;
         this.loadDevices();
+        setInterval(this.broadcastStateUpdateRequests.bind(this), 1000);
     }
     
     all() {
@@ -33,6 +35,53 @@ export default class DeviceManager {
         });
         
         return devices;
+    }
+    
+    async broadcastStateUpdateRequests() {
+        const devices =  this.all();
+        
+        const now = new Date().valueOf();
+        for (const d of devices) {
+            const offlineSince = Math.floor((now - (d.lastSeen as Date).valueOf()) / 1000);
+            const offlineSinceDays = offlineSince / 3600 / 24;
+            
+            if (offlineSinceDays > 7) {
+                continue;
+            }
+            
+            for (const f of d.state) {
+                if (typeof f.pendingChange === 'undefined' || f.changeInProgress) {
+                    continue;
+                }
+                
+                const changeRequestedAt = new Date(f.changeRequestedAt).valueOf();
+                
+                const elapsedSinceChanged = Math.floor((now - changeRequestedAt) / 1000);
+                if (elapsedSinceChanged < 5) {
+                    continue;
+                }
+                
+                f.changeRequestedAt = new Date();
+                console.log('Broadcasting', f.id);
+                this.emit('state:updateRequested', {
+                    deviceId: d.id,
+                    featureId: f.id
+                })
+            }
+        }
+    }
+    
+    get(deviceId): Device|null {
+        let device: Device|null = null;
+
+        this.devices.forEach((d, id) => {
+            if (id === deviceId) {
+                device = d;
+                return null;
+            }
+        });
+        
+        return device;
     }
     
     loadDevices() {
@@ -92,6 +141,10 @@ export default class DeviceManager {
             return null;
         }
         
+        if (typeof feature.value !== 'undefined') {
+            return feature.value;
+        }
+
         const schema = feature.schema;
         
         if (schema.type === 'boolean') {
@@ -108,10 +161,10 @@ export default class DeviceManager {
         const schema: any[] = [];
 
         for (const f of features) {
-            const value = this.defaultValue(f);
+            const stateValue = this.defaultValue(f);
             schema.push({
                 ...f,
-                value
+                value: stateValue
             });
         }
         
@@ -149,6 +202,85 @@ export default class DeviceManager {
         
         if (updates.name) {
             device.name = updates.name;
+        }
+    }
+    
+    async requestStateUpdate(change) {
+        await this.savingState;
+
+        const d: Device|null = this.get(change.deviceId);
+        if (!d) {
+            return;
+        }
+        
+        for (const state of d.state!) {
+            if (state.id !== change.featureId) {
+                continue;
+            }
+            
+            state.pendingChange = change.value;
+            state.changeRequestedAt = new Date();
+            await this.save();
+        }
+        this.emit('state:updateRequested', {
+            deviceId: change.deviceId,
+            featureId: change.featureId
+        });
+    }
+    
+    async getPendingUpdate(deviceId, featureId) {
+        await this.savingState;
+        
+        const d: Device|null = this.get(deviceId);
+        if (!d) {
+            throw new Error('Device not found');
+        }
+        
+        let foundFeature = false;
+        let returnValue: any;
+        
+        for (const state of d.state!) {
+            if (state.id !== featureId) {
+                continue;
+            }
+            
+            state.changeInProgress = true;
+            returnValue = state.pendingChange;
+            foundFeature = true;
+            await this.save();
+        }
+        
+        if (!foundFeature) {
+            throw new Error('Feature not found');
+        }
+        
+        return returnValue;
+    }
+    
+    async updateFeatureState(deviceId, featureId, featureState) {
+        await this.savingState;
+        
+        const d: Device|null = this.get(deviceId);
+        if (!d) {
+            throw new Error('Device not found');
+        }
+        
+        let foundFeature = false;
+        
+        for (const state of d.state!) {
+            if (state.id !== featureId) {
+                continue;
+            }
+            
+            delete state.pendingChange;
+            delete state.changeInProgress;
+            state.value = featureState;
+            foundFeature = true;
+            await this.save();
+        }
+        
+        if (!foundFeature) {
+            throw new Error('Feature not found');
         }
     }
     

@@ -18,9 +18,70 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
         });
     }));
     
-    app.all('/device/reg', asyncMiddleware(async (req: Request, res: Response) => {
-        DeviceManager.inst.register(req.body.id, req.body.name, req.body.features);
+    app.all('/device/update', asyncMiddleware(async (req: Request, res: Response) => {
+        const did = req.query.did || null;
+        const fid = req.query.fid || null;
+        
+        if (!did || !fid) {
+            return res.json({
+                status: false,
+                error: 'Missing did || fid parameters'
+            });
+        }
+        
+        const method = req.method.toLowerCase();
+        if (method === 'get') {
+            try {
+                const value = await DeviceManager.inst.getPendingUpdate(did, fid);
+                return res.json({
+                    status: true,
+                    value
+                })
+            } catch (e) {
+                console.error(e);
+                console.log('Device or feature not found', req.query);
+                return res.json({
+                    status: false,
+                    error: "Device or feature not found"
+                });
+            }
+        } else if (method === 'post') {
+            const data = req.body.data;
+            
+            try {
+                await DeviceManager.inst.updateFeatureState(did, fid, data);
+                return res.json({
+                    status: true
+                })
+            } catch (e) {
+                console.error(e);
+                console.log('Device or feature not found', req.query);
+                return res.json({
+                    status: false,
+                    error: "Device or feature not found"
+                });
+            }
+            
+        } else {
+            throw new Error(`Unsupported method ${method}`);
+        }
+    }));
+    
+    app.post('/request-update', asyncMiddleware(async (req: Request, res: Response) => {
+        const body = req.body;
+        const result = await DeviceManager.inst.requestStateUpdate(body);
+        res.json({
+            status: true,
+            result
+        });
+    }));
+    
+    app.post('/device/reg', asyncMiddleware(async (req: Request, res: Response) => {
+        console.log(req.body)
+        await DeviceManager.inst.register(req.body.id, req.body.name, req.body.features);
+        res.json({
+            status: true
+        });
         console.log("Registered", req.body.id);
-        res.send();
     }));
 }

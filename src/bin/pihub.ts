@@ -15,5 +15,11 @@ import DeviceManager from "../DeviceManager";
     await httpServer.initialize();
 
     const udpServer = new UDPServer(config.udp.port, config.http.port);
-    const udpAddress = await udpServer.initialize();
+    DeviceManager.inst.on('state:updateRequested', (ev: {
+        deviceId: string,
+        featureId: string
+    }) => {
+        udpServer.broadcastStateUpdateRequest(ev);
+    })
+    await udpServer.initialize();
 })();

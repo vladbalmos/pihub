@@ -14,13 +14,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const crypto_1 = require("crypto");
-class DeviceManager {
+const events_1 = __importDefault(require("events"));
+class DeviceManager extends events_1.default {
     constructor(options) {
+        super();
         this.devices = new Map();
         this.savingState = Promise.resolve();
         this.datadir = options.datadir;
         this.devicesFile = `${this.datadir}/devices.json`;
         this.loadDevices();
+        setInterval(this.broadcastStateUpdateRequests.bind(this), 1000);
     }
     all() {
         const devices = [];
@@ -33,6 +36,45 @@ class DeviceManager {
             });
         });
         return devices;
+    }
+    broadcastStateUpdateRequests() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const devices = this.all();
+            const now = new Date().valueOf();
+            for (const d of devices) {
+                const offlineSince = Math.floor((now - d.lastSeen.valueOf()) / 1000);
+                const offlineSinceDays = offlineSince / 3600 / 24;
+                if (offlineSinceDays > 7) {
+                    continue;
+                }
+                for (const f of d.state) {
+                    if (typeof f.pendingChange === 'undefined' || f.changeInProgress) {
+                        continue;
+                    }
+                    const changeRequestedAt = new Date(f.changeRequestedAt).valueOf();
+                    const elapsedSinceChanged = Math.floor((now - changeRequestedAt) / 1000);
+                    if (elapsedSinceChanged < 5) {
+                        continue;
+                    }
+                    f.changeRequestedAt = new Date();
+                    console.log('Broadcasting', f.id);
+                    this.emit('state:updateRequested', {
+                        deviceId: d.id,
+                        featureId: f.id
+                    });
+                }
+            }
+        });
+    }
+    get(deviceId) {
+        let device = null;
+        this.devices.forEach((d, id) => {
+            if (id === deviceId) {
+                device = d;
+                return null;
+            }
+        });
+        return device;
     }
     loadDevices() {
         let data;
@@ -87,6 +129,9 @@ class DeviceManager {
         if (!feature.schema) {
             return null;
         }
+        if (typeof feature.value !== 'undefined') {
+            return feature.value;
+        }
         const schema = feature.schema;
         if (schema.type === 'boolean') {
             return schema.default || false;
@@ -98,8 +143,8 @@ class DeviceManager {
     createDefaultState(features) {
         const schema = [];
         for (const f of features) {
-            const value = this.defaultValue(f);
-            schema.push(Object.assign(Object.assign({}, f), { value }));
+            const stateValue = this.defaultValue(f);
+            schema.push(Object.assign(Object.assign({}, f), { value: stateValue }));
         }
         return schema;
     }
@@ -127,6 +172,74 @@ class DeviceManager {
         if (updates.name) {
             device.name = updates.name;
         }
+    }
+    requestStateUpdate(change) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.savingState;
+            const d = this.get(change.deviceId);
+            if (!d) {
+                return;
+            }
+            for (const state of d.state) {
+                if (state.id !== change.featureId) {
+                    continue;
+                }
+                state.pendingChange = change.value;
+                state.changeRequestedAt = new Date();
+                yield this.save();
+            }
+            this.emit('state:updateRequested', {
+                deviceId: change.deviceId,
+                featureId: change.featureId
+            });
+        });
+    }
+    getPendingUpdate(deviceId, featureId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.savingState;
+            const d = this.get(deviceId);
+            if (!d) {
+                throw new Error('Device not found');
+            }
+            let foundFeature = false;
+            let returnValue;
+            for (const state of d.state) {
+                if (state.id !== featureId) {
+                    continue;
+                }
+                state.changeInProgress = true;
+                returnValue = state.pendingChange;
+                foundFeature = true;
+                yield this.save();
+            }
+            if (!foundFeature) {
+                throw new Error('Feature not found');
+            }
+            return returnValue;
+        });
+    }
+    updateFeatureState(deviceId, featureId, featureState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.savingState;
+            const d = this.get(deviceId);
+            if (!d) {
+                throw new Error('Device not found');
+            }
+            let foundFeature = false;
+            for (const state of d.state) {
+                if (state.id !== featureId) {
+                    continue;
+                }
+                delete state.pendingChange;
+                delete state.changeInProgress;
+                state.value = featureState;
+                foundFeature = true;
+                yield this.save();
+            }
+            if (!foundFeature) {
+                throw new Error('Feature not found');
+            }
+        });
     }
     getHash(data) {
         const hash = (0, crypto_1.createHash)('sha256');

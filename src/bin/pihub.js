@@ -26,6 +26,9 @@ const DeviceManager_1 = __importDefault(require("../DeviceManager"));
         httpServer.setRouter(http_routes_1.default);
         yield httpServer.initialize();
         const udpServer = new UDPServer_1.default(config_1.default.udp.port, config_1.default.http.port);
-        const udpAddress = yield udpServer.initialize();
+        DeviceManager_1.default.inst.on('state:updateRequested', (ev) => {
+            udpServer.broadcastStateUpdateRequest(ev);
+        });
+        yield udpServer.initialize();
     });
 })();
