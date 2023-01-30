@@ -33,6 +33,8 @@ class DeviceManager extends events_1.default {
                 state: device.state,
                 id: device.id,
                 name: device.name,
+                requestTopic: device.requestTopic,
+                responseTopic: device.responseTopic,
                 lastSeen: device.lastSeen
             });
         });
@@ -83,8 +85,12 @@ class DeviceManager extends events_1.default {
                     f.changeRequestedAt = new Date();
                     console.log('Broadcasting', f.id);
                     this.emit('state:updateRequested', {
-                        deviceId: d.id,
-                        featureId: f.id
+                        topic: d.requestTopic,
+                        payload: {
+                            deviceId: d.id,
+                            featureId: f.id,
+                            state: f.pendingChange
+                        }
                     });
                 }
             }
@@ -120,13 +126,17 @@ class DeviceManager extends events_1.default {
             const id = device[0];
             const deviceData = device[1];
             const name = deviceData.name;
+            const requestTopic = deviceData.requestTopic;
+            const responseTopic = deviceData.responseTopic;
             const features = deviceData.features;
             const featuresHash = deviceData.featuresHash;
             const state = deviceData.state;
             const lastSeen = new Date(deviceData.lastSeen);
             this.devices.set(id, {
-                name,
                 id,
+                name,
+                requestTopic,
+                responseTopic,
                 features,
                 featuresHash,
                 state,
@@ -134,11 +144,13 @@ class DeviceManager extends events_1.default {
             });
         }
     }
-    register(id, name, features) {
+    register(deviceReg) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.savingState;
+            const { requestTopic, responseTopic, state } = deviceReg;
+            const { id, name, features } = state;
             if (!this.devices.has(id)) {
-                this.add(id, name, features);
+                this.add(id, name, requestTopic, responseTopic, features);
             }
             else {
                 this.update(id, {
@@ -172,10 +184,12 @@ class DeviceManager extends events_1.default {
         }
         return schema;
     }
-    add(id, name, features) {
+    add(id, name, requestTopic, responseTopic, features) {
         this.devices.set(id, {
             id,
             name,
+            requestTopic,
+            responseTopic,
             features,
             featuresHash: this.getHash(features),
             state: this.createDefaultState(features),
@@ -215,8 +229,12 @@ class DeviceManager extends events_1.default {
             }
             this.pendingUpdates[`${change.deviceId}:${change.featureId}`] = 'pending';
             this.emit('state:updateRequested', {
-                deviceId: change.deviceId,
-                featureId: change.featureId
+                topic: d.requestTopic,
+                payload: {
+                    deviceId: change.deviceId,
+                    featureId: change.featureId,
+                    state: change.value
+                }
             });
         });
     }

@@ -68,7 +68,7 @@ function router(app, asyncMiddleware) {
             });
         }
     })));
-    app.all('/device/update', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
+    app.post('/device/update', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
         const did = req.query.did || null;
         const fid = req.query.fid || null;
         if (!did || !fid) {
@@ -77,43 +77,20 @@ function router(app, asyncMiddleware) {
                 error: 'Missing did || fid parameters'
             });
         }
-        const method = req.method.toLowerCase();
-        if (method === 'get') {
-            try {
-                const value = yield DeviceManager_1.default.inst.getPendingUpdate(did, fid);
-                return res.json({
-                    status: true,
-                    value
-                });
-            }
-            catch (e) {
-                console.error(e);
-                console.log('Device or feature not found', req.query);
-                return res.json({
-                    status: false,
-                    error: "Device or feature not found"
-                });
-            }
+        const data = req.body.data;
+        try {
+            yield DeviceManager_1.default.inst.updateFeatureState(did, fid, data);
+            return res.json({
+                status: true
+            });
         }
-        else if (method === 'post') {
-            const data = req.body.data;
-            try {
-                yield DeviceManager_1.default.inst.updateFeatureState(did, fid, data);
-                return res.json({
-                    status: true
-                });
-            }
-            catch (e) {
-                console.error(e);
-                console.log('Device or feature not found', req.query);
-                return res.json({
-                    status: false,
-                    error: "Device or feature not found"
-                });
-            }
-        }
-        else {
-            throw new Error(`Unsupported method ${method}`);
+        catch (e) {
+            console.error(e);
+            console.log('Device or feature not found', req.query);
+            return res.json({
+                status: false,
+                error: "Device or feature not found"
+            });
         }
     })));
     app.post('/request-update', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -123,13 +100,6 @@ function router(app, asyncMiddleware) {
             status: true,
             result
         });
-    })));
-    app.post('/device/reg', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {
-        yield DeviceManager_1.default.inst.register(req.body.id, req.body.name, req.body.features);
-        res.json({
-            status: true
-        });
-        console.log("Registered", req.body.id);
     })));
 }
 exports.default = router;

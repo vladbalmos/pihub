@@ -13,10 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const HttpServer_1 = __importDefault(require("../HttpServer"));
-const UDPServer_1 = __importDefault(require("../UDPServer"));
 const http_routes_1 = __importDefault(require("../http-routes"));
 const config_1 = __importDefault(require("../config"));
 const DeviceManager_1 = __importDefault(require("../DeviceManager"));
+const MQTT_1 = __importDefault(require("../MQTT"));
 (function run() {
     return __awaiter(this, void 0, void 0, function* () {
         DeviceManager_1.default.init({
@@ -25,10 +25,23 @@ const DeviceManager_1 = __importDefault(require("../DeviceManager"));
         const httpServer = new HttpServer_1.default(config_1.default.http.port, config_1.default.http.domain);
         httpServer.setRouter(http_routes_1.default);
         yield httpServer.initialize();
-        const udpServer = new UDPServer_1.default(config_1.default.udp.port, config_1.default.http.port);
-        DeviceManager_1.default.inst.on('state:updateRequested', (ev) => {
-            udpServer.broadcastStateUpdateRequest(ev);
+        const topics = DeviceManager_1.default.inst.all().map(d => d.responseTopic);
+        const mqtt = new MQTT_1.default(config_1.default.mqtt, topics);
+        mqtt.on('device:registration', (device) => __awaiter(this, void 0, void 0, function* () {
+            yield DeviceManager_1.default.inst.register(device);
+        }));
+        mqtt.on('device:update', (data) => __awaiter(this, void 0, void 0, function* () {
+            const { deviceId, featureId, state } = data;
+            try {
+                yield DeviceManager_1.default.inst.updateFeatureState(deviceId, featureId, state);
+            }
+            catch (e) {
+                console.error(e);
+            }
+        }));
+        DeviceManager_1.default.inst.on('state:updateRequested', (data) => {
+            mqtt.publishStateUpdateRequest(data);
         });
-        yield udpServer.initialize();
+        yield mqtt.initialize();
     });
 })();

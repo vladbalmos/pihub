@@ -3,8 +3,10 @@ export default {
         domain: process.env['HTTP_DOMAIN'] || 'pc.local',
         port: parseInt(process.env['HTTP_PORT'] || '3000', 10),
     },
-    udp: {
-        port: parseInt(process.env['UDP_PORT'] || '6000', 10),
+    mqtt: {
+        host: 'tcp://localhost:1883',
+        requestTopic: 'vb/devices/request',
+        responseTopic: 'vb/devices/response',
     },
     datadir: process.env['DATA_DIR'] || `${__dirname}/../data`
 }

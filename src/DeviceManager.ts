@@ -32,6 +32,8 @@ export default class DeviceManager extends EventEmitter {
                 state: device.state,
                 id: device.id,
                 name: device.name,
+                requestTopic: device.requestTopic,
+                responseTopic: device.responseTopic,
                 lastSeen: device.lastSeen
             });
         });
@@ -96,8 +98,12 @@ export default class DeviceManager extends EventEmitter {
                 f.changeRequestedAt = new Date();
                 console.log('Broadcasting', f.id);
                 this.emit('state:updateRequested', {
-                    deviceId: d.id,
-                    featureId: f.id
+                    topic: d.requestTopic, 
+                    payload: {
+                        deviceId: d.id,
+                        featureId: f.id,
+                        state: f.pendingChange
+                    }
                 })
             }
         }
@@ -137,14 +143,18 @@ export default class DeviceManager extends EventEmitter {
             const id = device[0];
             const deviceData = device[1];
             const name = deviceData.name;
+            const requestTopic = deviceData.requestTopic;
+            const responseTopic = deviceData.responseTopic;
             const features = deviceData.features;
             const featuresHash = deviceData.featuresHash;
             const state = deviceData.state;
             const lastSeen = new Date(deviceData.lastSeen);
             
             this.devices.set(id, {
-                name,
                 id,
+                name,
+                requestTopic,
+                responseTopic,
                 features,
                 featuresHash,
                 state,
@@ -153,11 +163,14 @@ export default class DeviceManager extends EventEmitter {
         }
     }
     
-    async register(id: string, name: string, features: any) {
+    async register(deviceReg: DeviceRegistration) {
         await this.savingState;
         
+        const { requestTopic, responseTopic, state } = deviceReg;
+        const { id, name, features } = state;
+        
         if (!this.devices.has(id)) {
-            this.add(id, name, features);
+            this.add(id, name, requestTopic, responseTopic, features);
         } else {
             this.update(id, {
                 name,
@@ -203,10 +216,12 @@ export default class DeviceManager extends EventEmitter {
         return schema;
     }
     
-    add(id: string, name: string, features: object) {
+    add(id: string, name: string, requestTopic: string, responseTopic: string, features: object) {
         this.devices.set(id, {
             id,
             name,
+            requestTopic,
+            responseTopic,
             features,
             featuresHash: this.getHash(features),
             state: this.createDefaultState(features),
@@ -258,8 +273,12 @@ export default class DeviceManager extends EventEmitter {
         
         this.pendingUpdates[`${change.deviceId}:${change.featureId}`] = 'pending';
         this.emit('state:updateRequested', {
-            deviceId: change.deviceId,
-            featureId: change.featureId
+            topic: d.requestTopic,
+            payload: {
+                deviceId: change.deviceId,
+                featureId: change.featureId,
+                state: change.value
+            }
         });
     }
     

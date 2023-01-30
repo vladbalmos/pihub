@@ -1,8 +1,8 @@
 import HttpServer from "../HttpServer";
-import UDPServer from "../UDPServer";
 import router from "../http-routes";
 import config from "../config";
 import DeviceManager from "../DeviceManager";
+import MQTT from "../MQTT";
 
 (async function run(): Promise<void> {
     
@@ -13,13 +13,27 @@ import DeviceManager from "../DeviceManager";
     const httpServer = new HttpServer(config.http.port, config.http.domain);
     httpServer.setRouter(router);
     await httpServer.initialize();
-
-    const udpServer = new UDPServer(config.udp.port, config.http.port);
-    DeviceManager.inst.on('state:updateRequested', (ev: {
-        deviceId: string,
-        featureId: string
-    }) => {
-        udpServer.broadcastStateUpdateRequest(ev);
+    
+    const topics = DeviceManager.inst.all().map(d => d.responseTopic)
+    const mqtt = new MQTT(config.mqtt, topics);
+    
+    mqtt.on('device:registration', async (device) => {
+        await DeviceManager.inst.register(device);
     })
-    await udpServer.initialize();
+    
+    mqtt.on('device:update', async (data) => {
+        const { deviceId, featureId, state} = data;
+        
+        try {
+            await DeviceManager.inst.updateFeatureState(deviceId, featureId, state);
+        } catch (e) {
+            console.error(e);
+        }
+    })
+    
+    DeviceManager.inst.on('state:updateRequested', (data) => {
+        mqtt.publishStateUpdateRequest(data);
+    })
+    
+    await mqtt.initialize();
 })();

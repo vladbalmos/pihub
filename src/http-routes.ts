@@ -71,7 +71,7 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
         
     }))
     
-    app.all('/device/update', asyncMiddleware(async (req: Request, res: Response) => {
+    app.post('/device/update', asyncMiddleware(async (req: Request, res: Response) => {
         const did = req.query.did || null;
         const fid = req.query.fid || null;
         
@@ -82,41 +82,20 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
             });
         }
         
-        const method = req.method.toLowerCase();
-        if (method === 'get') {
-            try {
-                const value = await DeviceManager.inst.getPendingUpdate(did, fid);
-                return res.json({
-                    status: true,
-                    value
-                })
-            } catch (e) {
-                console.error(e);
-                console.log('Device or feature not found', req.query);
-                return res.json({
-                    status: false,
-                    error: "Device or feature not found"
-                });
-            }
-        } else if (method === 'post') {
-            const data = req.body.data;
+        const data = req.body.data;
             
-            try {
-                await DeviceManager.inst.updateFeatureState(did, fid, data);
-                return res.json({
-                    status: true
-                })
-            } catch (e) {
-                console.error(e);
-                console.log('Device or feature not found', req.query);
-                return res.json({
-                    status: false,
-                    error: "Device or feature not found"
-                });
-            }
-            
-        } else {
-            throw new Error(`Unsupported method ${method}`);
+        try {
+            await DeviceManager.inst.updateFeatureState(did, fid, data);
+            return res.json({
+                status: true
+            })
+        } catch (e) {
+            console.error(e);
+            console.log('Device or feature not found', req.query);
+            return res.json({
+                status: false,
+                error: "Device or feature not found"
+            });
         }
     }));
     
@@ -127,13 +106,5 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
             status: true,
             result
         });
-    }));
-    
-    app.post('/device/reg', asyncMiddleware(async (req: Request, res: Response) => {
-        await DeviceManager.inst.register(req.body.id, req.body.name, req.body.features);
-        res.json({
-            status: true
-        });
-        console.log("Registered", req.body.id);
     }));
 }

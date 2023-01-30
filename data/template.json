@@ -1,0 +1,89 @@
+{
+    "name": "USB Power Hub",
+    "id": "PI_POWER_HUB_001",
+    "features": [
+    {
+        "id": "port_0",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 1",
+        "value": 1
+    },
+    {
+        "id": "port_1",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 2",
+        "value": 1
+    },
+    {
+        "id": "port_2",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 3",
+        "value": 1
+    },
+    {
+        "id": "port_3",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 4",
+        "value": 1
+    },
+    {
+        "id": "port_4",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 5",
+        "value": 1
+    },
+    {
+        "id": "port_5",
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Port 6",
+        "value": 1
+    },
+    {
+        "schema": {
+        "item": "string",
+        "type": "list",
+        "valid_values": [
+            "port_0",
+            "port_1",
+            "port_2",
+            "port_3",
+            "port_4",
+            "port_5"
+        ],
+        "multiple": true
+        },
+        "name": "Always ON ports list",
+        "value": [],
+        "description": "List all the ports that are always on, regardless of other settings/conditions",
+        "id": "always_on_list"
+    },
+    {
+        "schema": {
+        "default": 1,
+        "type": "boolean"
+        },
+        "name": "Turn off ports when input USB device is OFF",
+        "value": 1,
+        "description": "If a device is connected to the input port and it is powered on,\nwhen the device powers off it will turn off all the ports (excludes ports defined in the \"always on\" list)\n   ",
+        "id": "power_depends_on_usb_input"
+    }
+    ]
+}
