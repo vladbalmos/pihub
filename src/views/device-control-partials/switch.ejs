@@ -1,3 +1,4 @@
+<div id="<%= featureId(id) %>_container">
 <%
     switchValue = null;
     checked = ''
@@ -14,3 +15,4 @@
 %>
 <input <%= el_disabled %> data-control-type="switch" data-did="<%= did %>" data-fid="<%= id %>" class="btn-check" type="checkbox" role="switch" id="<%= featureId(id); %>" <%- checked %>>
 <label class="btn btn-outline-primary m-1" for="<%= featureId(id); %>"><%= name %></label>
+</div>

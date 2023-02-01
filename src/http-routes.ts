@@ -22,7 +22,8 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
         const updatesStatus = {...DeviceManager.inst.getPendingUpdates()}
         
         for (const key in updatesStatus) {
-            const status = updatesStatus[key];
+            const item = updatesStatus[key];
+            const status = item.updateStatus;
             if (status === 'completed') {
                 DeviceManager.inst.clearPendingUpdate(key);
             }

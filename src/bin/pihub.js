@@ -38,6 +38,7 @@ const MQTT_1 = __importDefault(require("../MQTT"));
             catch (e) {
                 console.error(e);
             }
+            console.log("State updated for ", deviceId, featureId, state);
         }));
         DeviceManager_1.default.inst.on('state:updateRequested', (data) => {
             mqtt.publishStateUpdateRequest(data);

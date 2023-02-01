@@ -29,7 +29,8 @@ function router(app, asyncMiddleware) {
     app.get('/status', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
         const updatesStatus = Object.assign({}, DeviceManager_1.default.inst.getPendingUpdates());
         for (const key in updatesStatus) {
-            const status = updatesStatus[key];
+            const item = updatesStatus[key];
+            const status = item.updateStatus;
             if (status === 'completed') {
                 DeviceManager_1.default.inst.clearPendingUpdate(key);
             }

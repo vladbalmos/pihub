@@ -25,12 +25,11 @@ async function jsonRequest(url, data = null, options = {}) {
 }
 
 async function changeState(deviceId, featureId, value, onChangeCallback) {
-    // Ajax, change state (set pendingChange = 1 on state)
-    // Store elId on server memory and when received new state for the device, assign the change to elId
-    // and on next refresh request, return only changed elements then execute callback assigned to elId
-    
-    const updateCallbackId = `${deviceId}:${featureId}`;
-    updateCallbacks[updateCallbackId] = onChangeCallback;
+    let updateCallbackId
+    if (typeof onChangeCallback !== 'undefined') {
+        updateCallbackId = `${deviceId}:${featureId}`;
+        updateCallbacks[updateCallbackId] = onChangeCallback;
+    }
     
     try {
         const result = await jsonRequest('/request-update', {
@@ -39,13 +38,26 @@ async function changeState(deviceId, featureId, value, onChangeCallback) {
             value
         })
 
-        if (!result) {
+        if (!result && updateCallbackId) {
             delete updateCallbacks[updateCallbackId];
             onChangeCallback(new Error('Unable to request state update'));
         }
     } catch (e) {
         console.error(e);
         toastr.error('Unable change feature state');
+    }
+}
+
+async function refreshView(deviceId, featureId) {
+    try {
+        const r = await jsonRequest(`/refresh?_=${Math.random()}&did=${deviceId}&fid=${featureId}`);
+        if (!r.status) {
+            return;
+        }
+
+        $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -96,25 +108,7 @@ function addToList(caller, formId) {
     elements.forEach((e) => e.prop('disabled', true));
     caller.prop('disabled', true);
     
-    changeState(did, featureId, value, async (err) => {
-        elements.forEach((e) => e.prop('disabled', false));
-        caller.prop('disabled', false);
-
-        if (err) {
-            return;
-        }
-
-        try {
-            const r = await jsonRequest(`/refresh?_=${Math.random()}&did=${did}&fid=${featureId}`);
-            if (!r.status) {
-                return;
-            }
-            
-            $(`#${did}_${featureId}_container`).replaceWith(r.content);
-        } catch (e) {
-            console.error(e);
-        }
-    });
+    changeState(did, featureId, value);
 }
 
 function removeFromList(caller, listId) {
@@ -133,14 +127,7 @@ function removeFromList(caller, listId) {
         value: itemId
     };
     
-    changeState(did, featureId, value, (err) => {
-        caller.removeAttr('disabled');
-        addBtn.removeAttr('disabled', 'disabled');
-        
-        if (!err) {
-            listEl.find(`li[data-id="${itemId}"]`).remove();
-        }
-    })
+    changeState(did, featureId, value);
 }
 
 function setList(caller, listId) {
@@ -153,10 +140,7 @@ function setList(caller, listId) {
     caller.prop('disabled', true);
     listEl.prop('disabled', true);
     
-    changeState(did, featureId, values, () => {
-        caller.prop('disabled', false);
-        listEl.prop('disabled', false);
-    })
+    changeState(did, featureId, values);
 }
 
 function bindControls() {
@@ -173,15 +157,9 @@ function bindControls() {
         const nextState = Number(target.is(':checked'));
         target.prop('disabled', true);
         
-        const { did, featureId, elId } = describe(target);
+        const { did, featureId } = describe(target);
 
-        changeState(did, featureId, nextState, (err) => {
-            target.prop('disabled', false);
-            
-            if (!err) {
-                target.prop('checked', Boolean(nextState));
-            }
-        })
+        changeState(did, featureId, nextState);
     });
     
 
@@ -239,15 +217,8 @@ async function startPolling() {
         result = result.result
         
         for (const cbId in result) {
-            const status = result[cbId];
-            
-            if (status === 'completed' && typeof updateCallbacks[cbId] === 'function') {
-                try {
-                    await updateCallbacks[cbId]();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
+            const [deviceId, featureId] = cbId.split(':');
+            await refreshView(deviceId, featureId);
         }
         await delay(DELAY);
     }

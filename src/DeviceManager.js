@@ -41,7 +41,17 @@ class DeviceManager extends events_1.default {
         return devices;
     }
     getPendingUpdates() {
-        return this.pendingUpdates;
+        const updates = this.pendingUpdates;
+        const ret = {};
+        for (const key in updates) {
+            const [deviceId, featueId] = key.split(':');
+            const state = this.getState(deviceId, featueId);
+            ret[key] = {
+                updateStatus: updates[key],
+                value: state.value
+            };
+        }
+        return ret;
     }
     clearPendingUpdate(key) {
         delete this.pendingUpdates[key];
@@ -199,6 +209,7 @@ class DeviceManager extends events_1.default {
     update(id, updates) {
         const device = this.devices.get(id);
         device.lastSeen = new Date();
+        // TODO: Update state also
         if (updates.features) {
             const existingFeatures = device === null || device === void 0 ? void 0 : device.featuresHash;
             const newFeatures = this.getHash(updates.features);

@@ -34,6 +34,7 @@ class MQTT extends events_1.default {
             this.client = yield (0, async_mqtt_1.connectAsync)(this.host);
             yield this.subscribeToMainTopic();
             yield this.discover();
+            console.log('MQTT initialized');
         });
     }
     subscribeToMainTopic() {
@@ -68,7 +69,9 @@ class MQTT extends events_1.default {
             }
             this.emit('device:update', message);
         }));
-        return (_b = this.client) === null || _b === void 0 ? void 0 : _b.subscribe([this.responseTopic, ...this.deviceTopics], this.subscriptionOptions);
+        const topics = [this.responseTopic, ...this.deviceTopics];
+        console.log('Subscribing to', topics);
+        return (_b = this.client) === null || _b === void 0 ? void 0 : _b.subscribe(topics, this.subscriptionOptions);
     }
     publishStateUpdateRequest(data) {
         return this.publishToClient(data.topic, data.payload);
@@ -78,7 +81,7 @@ class MQTT extends events_1.default {
         return (_a = this.client) === null || _a === void 0 ? void 0 : _a.publish(topic, JSON.stringify({
             request: 'state-update',
             payload
-        }));
+        }), Object.assign(Object.assign({}, this.publishingOptions), { retain: true }));
     }
     discover() {
         var _a;

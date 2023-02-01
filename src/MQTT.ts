@@ -42,6 +42,7 @@ export default class MQTT extends EventEmitter{
         
         await this.subscribeToMainTopic()
         await this.discover();
+        console.log('MQTT initialized');
     }
     
     subscribeToMainTopic() {
@@ -77,7 +78,9 @@ export default class MQTT extends EventEmitter{
             
             this.emit('device:update', message);
         });
-        return this.client?.subscribe([this.responseTopic, ...this.deviceTopics], this.subscriptionOptions);
+        const topics = [this.responseTopic, ...this.deviceTopics];
+        console.log('Subscribing to', topics)
+        return this.client?.subscribe(topics, this.subscriptionOptions);
     }
     
     publishStateUpdateRequest(data: { topic: string, payload: any}) {
@@ -88,7 +91,10 @@ export default class MQTT extends EventEmitter{
         return this.client?.publish(topic, JSON.stringify({
             request: 'state-update',
             payload
-        }));
+        }), {
+            ...this.publishingOptions,
+            retain: true
+        });
     }
     
     discover() {

@@ -29,6 +29,7 @@ import MQTT from "../MQTT";
         } catch (e) {
             console.error(e);
         }
+        console.log("State updated for ", deviceId, featureId, state)
     })
     
     DeviceManager.inst.on('state:updateRequested', (data) => {

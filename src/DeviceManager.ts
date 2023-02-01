@@ -42,7 +42,19 @@ export default class DeviceManager extends EventEmitter {
     }
     
     getPendingUpdates() {
-        return this.pendingUpdates;
+        const updates = this.pendingUpdates;
+        
+        const ret = {};
+        for (const key in updates) {
+            const [deviceId, featueId] = key.split(':');
+            const state = this.getState(deviceId, featueId);
+            ret[key] = {
+                updateStatus: updates[key],
+                value: state.value
+            }
+        }
+        
+        return ret;
     }
     
     clearPendingUpdate(key) {
@@ -237,6 +249,7 @@ export default class DeviceManager extends EventEmitter {
         const device = this.devices.get(id)!;
         device.lastSeen = new Date();
         
+        // TODO: Update state also
         if (updates.features) {
             const existingFeatures = device?.featuresHash;
             const newFeatures = this.getHash(updates.features);
