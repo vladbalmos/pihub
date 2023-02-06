@@ -7,8 +7,11 @@
     } else {
         switchValue = typeof schema.default !== 'undefined' ? schema.default : null;
     }
-    
+
     if (switchValue !== null) {
+        if (typeof switchValue === 'boolean') {
+            switchValue = Number(switchValue);
+        }
         switchValue = parseInt(switchValue, 10);
         checked = switchValue ? 'checked' : checked;
     }
