@@ -1,6 +1,7 @@
 import { createServer } from "http";
 import express from 'express'
 import EventEmitter from "events";
+import logger from "./logger";
 const ejs = require('ejs');
 
 export default class HttpServer extends EventEmitter {
@@ -52,7 +53,7 @@ export default class HttpServer extends EventEmitter {
                 resolve();
             });
             server.on('error', (e) => {
-                console.error(e);
+                logger.error(e);
                 if (!listening) {
                     return reject(e);
                 }
@@ -73,7 +74,7 @@ export default class HttpServer extends EventEmitter {
     asyncMiddleware(fn: CallableFunction) {
         return (req: express.Request, res: express.Response, next: CallableFunction) => {
             Promise.resolve(fn(req, res, next))
-                   .catch((e) => { console.error(e); next(e) });
+                   .catch((e) => { logger.error(e); next(e) });
         }
     }
     

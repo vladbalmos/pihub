@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { AsyncMqttClient, connectAsync, IClientPublishOptions, IClientSubscribeOptions  } from "async-mqtt";
+import logger from "./logger";
 
 export default class MQTT extends EventEmitter{
     
@@ -42,7 +43,7 @@ export default class MQTT extends EventEmitter{
         
         await this.subscribeToMainTopic()
         await this.discover();
-        console.log('MQTT initialized');
+        logger.info('MQTT initialized');
     }
     
     subscribeToMainTopic() {
@@ -55,8 +56,8 @@ export default class MQTT extends EventEmitter{
             
             if (topic === this.responseTopic) {
                 if (!message.requestTopic || !message.responseTopic || !message.state) {
-                    console.error('Invalid registration payload');
-                    console.log(message)
+                    logger.error('Invalid registration payload');
+                    logger.info(message)
                     return;
                 }
 
@@ -79,7 +80,7 @@ export default class MQTT extends EventEmitter{
             this.emit('device:update', message);
         });
         const topics = [this.responseTopic, ...this.deviceTopics];
-        console.log('Subscribing to', topics)
+        logger.info('Subscribing to', topics)
         return this.client?.subscribe(topics, this.subscriptionOptions);
     }
     

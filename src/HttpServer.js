@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = require("http");
 const express_1 = __importDefault(require("express"));
 const events_1 = __importDefault(require("events"));
+const logger_1 = __importDefault(require("./logger"));
 const ejs = require('ejs');
 class HttpServer extends events_1.default {
     constructor(port, domain) {
@@ -44,7 +45,7 @@ class HttpServer extends events_1.default {
                 resolve();
             });
             server.on('error', (e) => {
-                console.error(e);
+                logger_1.default.error(e);
                 if (!listening) {
                     return reject(e);
                 }
@@ -60,7 +61,7 @@ class HttpServer extends events_1.default {
     asyncMiddleware(fn) {
         return (req, res, next) => {
             Promise.resolve(fn(req, res, next))
-                .catch((e) => { console.error(e); next(e); });
+                .catch((e) => { logger_1.default.error(e); next(e); });
         };
     }
 }

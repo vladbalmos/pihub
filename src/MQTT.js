@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = __importDefault(require("events"));
 const async_mqtt_1 = require("async-mqtt");
+const logger_1 = __importDefault(require("./logger"));
 class MQTT extends events_1.default {
     constructor(options, devicesTopics) {
         super();
@@ -34,7 +35,7 @@ class MQTT extends events_1.default {
             this.client = yield (0, async_mqtt_1.connectAsync)(this.host);
             yield this.subscribeToMainTopic();
             yield this.discover();
-            console.log('MQTT initialized');
+            logger_1.default.info('MQTT initialized');
         });
     }
     subscribeToMainTopic() {
@@ -49,8 +50,8 @@ class MQTT extends events_1.default {
             }
             if (topic === this.responseTopic) {
                 if (!message.requestTopic || !message.responseTopic || !message.state) {
-                    console.error('Invalid registration payload');
-                    console.log(message);
+                    logger_1.default.error('Invalid registration payload');
+                    logger_1.default.info(message);
                     return;
                 }
                 if (this.deviceTopics.indexOf(message.responseTopic) === -1) {
@@ -70,7 +71,7 @@ class MQTT extends events_1.default {
             this.emit('device:update', message);
         }));
         const topics = [this.responseTopic, ...this.deviceTopics];
-        console.log('Subscribing to', topics);
+        logger_1.default.info('Subscribing to', topics);
         return (_b = this.client) === null || _b === void 0 ? void 0 : _b.subscribe(topics, this.subscriptionOptions);
     }
     publishStateUpdateRequest(data) {

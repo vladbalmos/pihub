@@ -3,6 +3,7 @@ import router from "../http-routes";
 import config from "../config";
 import DeviceManager from "../DeviceManager";
 import MQTT from "../MQTT";
+import logger from "../logger";
 
 (async function run(): Promise<void> {
     
@@ -27,9 +28,9 @@ import MQTT from "../MQTT";
         try {
             await DeviceManager.inst.updateFeatureState(deviceId, featureId, state);
         } catch (e) {
-            console.error(e);
+            logger.error(e);
         }
-        console.log("State updated for ", deviceId, featureId, state)
+        logger.info("State updated for ", deviceId, featureId, state)
     })
     
     DeviceManager.inst.on('state:updateRequested', (data) => {

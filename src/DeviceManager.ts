@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { createHash, Hash } from 'crypto';
 import EventEmitter from 'events';
+import logger from './logger';
 
 export default class DeviceManager extends EventEmitter {
 
@@ -108,7 +109,7 @@ export default class DeviceManager extends EventEmitter {
                 }
                 
                 f.changeRequestedAt = new Date();
-                console.log('Broadcasting', f.id);
+                logger.info('Broadcasting', f.id);
                 this.emit('state:updateRequested', {
                     topic: d.requestTopic, 
                     payload: {
@@ -140,14 +141,14 @@ export default class DeviceManager extends EventEmitter {
         try {
             data = fs.readFileSync(this.devicesFile);
         } catch (e) {
-            console.log('No devices file found');
+            logger.info('No devices file found');
             return;
         }
         
         try {
             data = JSON.parse(data)
         } catch (e) {
-            console.log('Unable to parse devices file');
+            logger.info('Unable to parse devices file');
             throw e;
         }
         
@@ -249,14 +250,20 @@ export default class DeviceManager extends EventEmitter {
         const device = this.devices.get(id)!;
         device.lastSeen = new Date();
         
-        // TODO: Update state also
         if (updates.features) {
             const existingFeatures = device?.featuresHash;
             const newFeatures = this.getHash(updates.features);
             
             if (existingFeatures !== newFeatures) {
+                logger.info(`Device ${id} updated`);
                 device.features = updates.features;
                 device.featuresHash = newFeatures;
+                device.state = this.createDefaultState(updates.features);
+                
+                // @ts-expect-error
+                for (const f of updates.features) {
+                    this.pendingUpdates[`${id}:${f.id}`] = 'completed';
+                }
             }
         }
         

@@ -17,6 +17,7 @@ const http_routes_1 = __importDefault(require("../http-routes"));
 const config_1 = __importDefault(require("../config"));
 const DeviceManager_1 = __importDefault(require("../DeviceManager"));
 const MQTT_1 = __importDefault(require("../MQTT"));
+const logger_1 = __importDefault(require("../logger"));
 (function run() {
     return __awaiter(this, void 0, void 0, function* () {
         DeviceManager_1.default.init({
@@ -36,9 +37,9 @@ const MQTT_1 = __importDefault(require("../MQTT"));
                 yield DeviceManager_1.default.inst.updateFeatureState(deviceId, featureId, state);
             }
             catch (e) {
-                console.error(e);
+                logger_1.default.error(e);
             }
-            console.log("State updated for ", deviceId, featureId, state);
+            logger_1.default.info("State updated for ", deviceId, featureId, state);
         }));
         DeviceManager_1.default.inst.on('state:updateRequested', (data) => {
             mqtt.publishStateUpdateRequest(data);

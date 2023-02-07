@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const crypto_1 = require("crypto");
 const events_1 = __importDefault(require("events"));
+const logger_1 = __importDefault(require("./logger"));
 class DeviceManager extends events_1.default {
     constructor(options) {
         super();
@@ -93,7 +94,7 @@ class DeviceManager extends events_1.default {
                         continue;
                     }
                     f.changeRequestedAt = new Date();
-                    console.log('Broadcasting', f.id);
+                    logger_1.default.info('Broadcasting', f.id);
                     this.emit('state:updateRequested', {
                         topic: d.requestTopic,
                         payload: {
@@ -122,14 +123,14 @@ class DeviceManager extends events_1.default {
             data = fs_1.default.readFileSync(this.devicesFile);
         }
         catch (e) {
-            console.log('No devices file found');
+            logger_1.default.info('No devices file found');
             return;
         }
         try {
             data = JSON.parse(data);
         }
         catch (e) {
-            console.log('Unable to parse devices file');
+            logger_1.default.info('Unable to parse devices file');
             throw e;
         }
         for (const device of data) {
@@ -209,13 +210,18 @@ class DeviceManager extends events_1.default {
     update(id, updates) {
         const device = this.devices.get(id);
         device.lastSeen = new Date();
-        // TODO: Update state also
         if (updates.features) {
             const existingFeatures = device === null || device === void 0 ? void 0 : device.featuresHash;
             const newFeatures = this.getHash(updates.features);
             if (existingFeatures !== newFeatures) {
+                logger_1.default.info(`Device ${id} updated`);
                 device.features = updates.features;
                 device.featuresHash = newFeatures;
+                device.state = this.createDefaultState(updates.features);
+                // @ts-expect-error
+                for (const f of updates.features) {
+                    this.pendingUpdates[`${id}:${f.id}`] = 'completed';
+                }
             }
         }
         if (updates.name) {

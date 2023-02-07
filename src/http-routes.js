@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const DeviceManager_1 = __importDefault(require("./DeviceManager"));
 const UIBuilder_1 = __importDefault(require("./UIBuilder"));
+const logger_1 = __importDefault(require("./logger"));
 function router(app, asyncMiddleware) {
     app.get('/', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
         const devices = DeviceManager_1.default.inst.all();
@@ -62,7 +63,7 @@ function router(app, asyncMiddleware) {
             });
         }
         catch (e) {
-            console.error(e);
+            logger_1.default.error(e);
             return res.json({
                 status: false,
                 error: e.message
@@ -86,8 +87,8 @@ function router(app, asyncMiddleware) {
             });
         }
         catch (e) {
-            console.error(e);
-            console.log('Device or feature not found', req.query);
+            logger_1.default.error(e);
+            logger_1.default.info('Device or feature not found', req.query);
             return res.json({
                 status: false,
                 error: "Device or feature not found"

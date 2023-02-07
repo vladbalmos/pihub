@@ -1,6 +1,7 @@
 import { Application, Request, Response } from "express";
 import DeviceManager from "./DeviceManager";
 import UIBuilder from "./UIBuilder";
+import logger from "./logger";
 
 export default function router(app: Application, asyncMiddleware: CallableFunction) {
     
@@ -63,7 +64,7 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
                 content: view
             });
         } catch (e: any) {
-            console.error(e);
+            logger.error(e);
             return res.json({
                 status: false,
                 error: e.message
@@ -91,8 +92,8 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
                 status: true
             })
         } catch (e) {
-            console.error(e);
-            console.log('Device or feature not found', req.query);
+            logger.error(e);
+            logger.info('Device or feature not found', req.query);
             return res.json({
                 status: false,
                 error: "Device or feature not found"
