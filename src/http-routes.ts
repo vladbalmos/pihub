@@ -93,7 +93,7 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
             })
         } catch (e) {
             logger.error(e);
-            logger.info('Device or feature not found', req.query);
+            logger.info('Device or feature not found %s', req.query);
             return res.json({
                 status: false,
                 error: "Device or feature not found"

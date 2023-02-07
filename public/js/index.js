@@ -130,6 +130,11 @@ function removeFromList(caller, listId) {
     changeState(did, featureId, value);
 }
 
+function callAction(caller) {
+    const { did, featureId } = describe(caller);
+    // TODO: implement this
+}
+
 function setList(caller, listId) {
     const listEl = $(`#${listId}`);
 
@@ -166,6 +171,12 @@ function bindControls() {
 
     $('body').on('click', 'button', (e) => {
         const target = $(e.currentTarget);
+        
+        if (target.data('role') === 'action') {
+            e.preventDefault();
+            e.stopPropagation();
+            callAction(target);
+        }
         
         if (target.data('operator') === 'set' && target.data('role') === 'list-control') {
             e.preventDefault();

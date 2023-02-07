@@ -80,7 +80,7 @@ export default class MQTT extends EventEmitter{
             this.emit('device:update', message);
         });
         const topics = [this.responseTopic, ...this.deviceTopics];
-        logger.info('Subscribing to', topics)
+        logger.info('Subscribing to %s', topics)
         return this.client?.subscribe(topics, this.subscriptionOptions);
     }
     

@@ -109,7 +109,7 @@ export default class DeviceManager extends EventEmitter {
                 }
                 
                 f.changeRequestedAt = new Date();
-                logger.info('Broadcasting', f.id);
+                logger.info('Broadcasting %s', f.id);
                 this.emit('state:updateRequested', {
                     topic: d.requestTopic, 
                     payload: {

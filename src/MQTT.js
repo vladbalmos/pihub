@@ -71,7 +71,7 @@ class MQTT extends events_1.default {
             this.emit('device:update', message);
         }));
         const topics = [this.responseTopic, ...this.deviceTopics];
-        logger_1.default.info('Subscribing to', topics);
+        logger_1.default.info('Subscribing to %s', topics);
         return (_b = this.client) === null || _b === void 0 ? void 0 : _b.subscribe(topics, this.subscriptionOptions);
     }
     publishStateUpdateRequest(data) {

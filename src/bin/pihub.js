@@ -39,7 +39,7 @@ const logger_1 = __importDefault(require("../logger"));
             catch (e) {
                 logger_1.default.error(e);
             }
-            logger_1.default.info("State updated for ", deviceId, featureId, state);
+            logger_1.default.info("State updated for %s %s %s", deviceId, featureId, state);
         }));
         DeviceManager_1.default.inst.on('state:updateRequested', (data) => {
             mqtt.publishStateUpdateRequest(data);

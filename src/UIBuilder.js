@@ -54,6 +54,8 @@ class UIBuilder {
                     return 'simple-list';
                 }
                 return 'list';
+            case 'action':
+                return 'button';
             default:
                 throw new Error(`Partial not implemented for ${schemaType}`);
         }

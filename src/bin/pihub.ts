@@ -30,7 +30,7 @@ import logger from "../logger";
         } catch (e) {
             logger.error(e);
         }
-        logger.info("State updated for ", deviceId, featureId, state)
+        logger.info("State updated for %s %s %s", deviceId, featureId, state)
     })
     
     DeviceManager.inst.on('state:updateRequested', (data) => {

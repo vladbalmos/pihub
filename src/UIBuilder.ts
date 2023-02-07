@@ -59,8 +59,9 @@ export default class UIBuilder {
                 if (schema.item === 'string') {
                     return 'simple-list';
                 }
-                
                 return 'list';
+            case 'action':
+                return 'button';
             default:
                 throw new Error(`Partial not implemented for ${schemaType}`);
         }

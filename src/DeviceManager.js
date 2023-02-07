@@ -94,7 +94,7 @@ class DeviceManager extends events_1.default {
                         continue;
                     }
                     f.changeRequestedAt = new Date();
-                    logger_1.default.info('Broadcasting', f.id);
+                    logger_1.default.info('Broadcasting %s', f.id);
                     this.emit('state:updateRequested', {
                         topic: d.requestTopic,
                         payload: {

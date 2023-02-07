@@ -88,7 +88,7 @@ function router(app, asyncMiddleware) {
         }
         catch (e) {
             logger_1.default.error(e);
-            logger_1.default.info('Device or feature not found', req.query);
+            logger_1.default.info('Device or feature not found %s', req.query);
             return res.json({
                 status: false,
                 error: "Device or feature not found"
