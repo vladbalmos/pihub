@@ -42,17 +42,20 @@ class DeviceManager extends events_1.default {
         return devices;
     }
     getPendingUpdates() {
+        var _a;
         const updates = this.pendingUpdates;
+        const lastSeen = {};
         const ret = {};
         for (const key in updates) {
-            const [deviceId, featueId] = key.split(':');
-            const state = this.getState(deviceId, featueId);
+            const [deviceId, featureId] = key.split(':');
+            const state = this.getState(deviceId, featureId);
+            lastSeen[deviceId] = (_a = this.get(deviceId)) === null || _a === void 0 ? void 0 : _a.lastSeen;
             ret[key] = {
                 updateStatus: updates[key],
                 value: state.value
             };
         }
-        return ret;
+        return { updates: ret, lastSeen };
     }
     clearPendingUpdate(key) {
         delete this.pendingUpdates[key];
@@ -227,6 +230,7 @@ class DeviceManager extends events_1.default {
         if (updates.name) {
             device.name = updates.name;
         }
+        console.log(device.lastSeen);
     }
     requestStateUpdate(change) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -288,6 +292,7 @@ class DeviceManager extends events_1.default {
             if (!d) {
                 throw new Error('Device not found');
             }
+            d.lastSeen = new Date();
             let foundFeature = false;
             for (const state of d.state) {
                 if (state.id !== featureId) {

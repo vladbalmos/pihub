@@ -45,17 +45,20 @@ export default class DeviceManager extends EventEmitter {
     getPendingUpdates() {
         const updates = this.pendingUpdates;
         
+        const lastSeen = {};
         const ret = {};
         for (const key in updates) {
-            const [deviceId, featueId] = key.split(':');
-            const state = this.getState(deviceId, featueId);
+            const [deviceId, featureId] = key.split(':');
+            const state = this.getState(deviceId, featureId);
+            lastSeen[deviceId] = this.get(deviceId)?.lastSeen;
+
             ret[key] = {
                 updateStatus: updates[key],
                 value: state.value
             }
         }
         
-        return ret;
+        return { updates: ret, lastSeen }
     }
     
     clearPendingUpdate(key) {
@@ -270,6 +273,8 @@ export default class DeviceManager extends EventEmitter {
         if (updates.name) {
             device.name = updates.name;
         }
+        
+        console.log(device.lastSeen);
     }
     
     async requestStateUpdate(change) {
@@ -340,6 +345,7 @@ export default class DeviceManager extends EventEmitter {
         if (!d) {
             throw new Error('Device not found');
         }
+        d.lastSeen = new Date();
         
         let foundFeature = false;
         

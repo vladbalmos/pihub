@@ -225,6 +225,10 @@ async function startPolling() {
             continue;
         }
         
+        for (const key in result.lastSeen) {
+            $(`span#${key}-last-seen`).html(result.lastSeen[key]);
+            
+        }
         result = result.result
         
         for (const cbId in result) {

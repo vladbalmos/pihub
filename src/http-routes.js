@@ -28,9 +28,9 @@ function router(app, asyncMiddleware) {
         });
     })));
     app.get('/status', asyncMiddleware((_, res) => __awaiter(this, void 0, void 0, function* () {
-        const updatesStatus = Object.assign({}, DeviceManager_1.default.inst.getPendingUpdates());
-        for (const key in updatesStatus) {
-            const item = updatesStatus[key];
+        const updatesStatus = DeviceManager_1.default.inst.getPendingUpdates();
+        for (const key in updatesStatus.updates) {
+            const item = updatesStatus.updates[key];
             const status = item.updateStatus;
             if (status === 'completed') {
                 DeviceManager_1.default.inst.clearPendingUpdate(key);
@@ -38,7 +38,8 @@ function router(app, asyncMiddleware) {
         }
         return res.json({
             status: true,
-            result: updatesStatus
+            result: updatesStatus.updates,
+            lastSeen: updatesStatus.lastSeen
         });
     })));
     app.get('/refresh', asyncMiddleware((req, res) => __awaiter(this, void 0, void 0, function* () {

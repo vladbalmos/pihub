@@ -5,7 +5,7 @@
         <h5>
             <%= dv.name %>
         </h5>
-        <p>Last seen:  <%= dv.lastSeen %></p>
+        <p>Last seen:  <span data-did="<%= dv.id %>" id="<%= dv.id %>-last-seen"><%= dv.lastSeen %></span></p>
         <div class="grid text-left">
             <% for (const v of dv.views) { %>
                 <div class="g-col-6">

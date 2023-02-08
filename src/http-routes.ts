@@ -20,10 +20,10 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
     }));
     
     app.get('/status', asyncMiddleware(async (_: Request, res: Response) => {
-        const updatesStatus = {...DeviceManager.inst.getPendingUpdates()}
+        const updatesStatus = DeviceManager.inst.getPendingUpdates();
         
-        for (const key in updatesStatus) {
-            const item = updatesStatus[key];
+        for (const key in updatesStatus.updates) {
+            const item = updatesStatus.updates[key];
             const status = item.updateStatus;
             if (status === 'completed') {
                 DeviceManager.inst.clearPendingUpdate(key);
@@ -32,7 +32,8 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
         
         return res.json({
             status: true,
-            result: updatesStatus
+            result: updatesStatus.updates,
+            lastSeen: updatesStatus.lastSeen
         })
     }));
     
