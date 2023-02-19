@@ -4,7 +4,7 @@ export default {
         port: parseInt(process.env['HTTP_PORT'] || '3000', 10),
     },
     mqtt: {
-        host: 'tcp://pc.local:1883',
+        host: process.env['MQTT_HOST'] || 'tcp://localhost:1883',
         requestTopic: 'vb/devices/request',
         responseTopic: 'vb/devices/response',
     },
