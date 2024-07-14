@@ -40,22 +40,32 @@ async function changeState(deviceId, featureId, value, onChangeCallback) {
 
         if (!result && updateCallbackId) {
             delete updateCallbacks[updateCallbackId];
-            onChangeCallback(new Error('Unable to request state update'));
+            // onChangeCallback(new Error('Unable to request state update'));
         }
+
+        // onChangeCallback(null, result);
     } catch (e) {
         console.error(e);
         toastr.error('Unable change feature state');
     }
 }
 
-async function refreshView(deviceId, featureId) {
+async function refreshView(deviceId, featureId, schema) {
     try {
         const r = await jsonRequest(`/refresh?_=${Math.random()}&did=${deviceId}&fid=${featureId}`);
         if (!r.status) {
             return;
         }
 
-        $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
+        if (schema.type !== 'color') {
+            $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
+        }
+
+        $('body').find('input.colorpicker').each((i, el) => {
+            if (!$(el).minicolors('settings')) {
+               $(el).minicolors() 
+            }
+        });
     } catch (e) {
         console.error(e);
     }
@@ -149,6 +159,24 @@ function setList(caller, listId) {
 }
 
 function bindControls() {
+    // $.minicolors.defaults.control = 'brightness';
+    $.minicolors.defaults.control = 'wheel';
+    $.minicolors.defaults.theme = 'bootstrap';
+    $.minicolors.defaults.change = function (color, opacity) {
+        const target = $(this);
+        
+        if (target.data('control-type') !== 'color') {
+            return;
+        }
+        
+        clearTimeout(target.data('timeout'));
+        target.data('timeout', setTimeout(() => {
+            const nextState = color;
+            
+            const { did, featureId } = describe(target);
+            changeState(did, featureId, nextState);
+        }, 100));
+    };
     
     $('body').on('click', 'input[type="checkbox"]', (e) => {
         const target = $(e.currentTarget);
@@ -205,6 +233,10 @@ function bindControls() {
             removeFromList(target, target.data('target'));
         }
     });
+    
+    $('body').find('input.colorpicker').each((i, el) => {
+        $(el).minicolors();
+    });
 }
 
 function delay(ms) {
@@ -233,7 +265,8 @@ async function startPolling() {
         
         for (const cbId in result) {
             const [deviceId, featureId] = cbId.split(':');
-            await refreshView(deviceId, featureId);
+            const data = result[cbId];
+            await refreshView(deviceId, featureId, data.schema);
         }
         await delay(DELAY);
     }

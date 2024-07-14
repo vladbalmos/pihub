@@ -52,7 +52,8 @@ class DeviceManager extends events_1.default {
             lastSeen[deviceId] = (_a = this.get(deviceId)) === null || _a === void 0 ? void 0 : _a.lastSeen;
             ret[key] = {
                 updateStatus: updates[key],
-                value: state.value
+                value: state.value,
+                schema: state.schema
             };
         }
         return { updates: ret, lastSeen };

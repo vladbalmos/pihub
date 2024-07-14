@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = {
     http: {
-        domain: process.env['HTTP_DOMAIN'] || 'pc.local',
+        domain: process.env['HTTP_DOMAIN'] || 'pcwin.local',
         port: parseInt(process.env['HTTP_PORT'] || '3000', 10),
     },
     mqtt: {

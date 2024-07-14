@@ -56,6 +56,8 @@ class UIBuilder {
                 return 'list';
             case 'action':
                 return 'button';
+            case 'color':
+                return 'colorpicker';
             default:
                 throw new Error(`Partial not implemented for ${schemaType}`);
         }
@@ -64,6 +66,7 @@ class UIBuilder {
         file = `${this.viewsPath}/${this.partialsPrefix}/${file}.ejs`;
         data.el_disabled = (typeof data.pendingChange !== 'undefined') ? 'disabled' : '';
         data.el_multiple = (data.schema.multiple) ? 'multiple' : '';
+        data.pending_change = (typeof data.pendingChange !== 'undefined') ? '1' : '0';
         return ejs.renderFile(file, Object.assign(Object.assign({}, data), { featureId: (id) => {
                 return `${data.did}_${id}`;
             } }), {

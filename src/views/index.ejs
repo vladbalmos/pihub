@@ -1,5 +1,9 @@
 <%- include('layout/top') %>
 
+<% if (!deviceViews.length) { %>
+    <h3>No devices found</h3>
+<% } %>
+
 <% for (const dv of deviceViews) { %>
     <div class="row">
         <h5>
@@ -14,7 +18,7 @@
                 <% } %>
         </div>
     </div>
-    <% } %>
+<% } %>
 
 <script src="<%= asset('js/index.js'); %>"></script>
 <%- include('layout/bottom') %>

@@ -54,7 +54,8 @@ export default class DeviceManager extends EventEmitter {
 
             ret[key] = {
                 updateStatus: updates[key],
-                value: state.value
+                value: state.value,
+                schema: state.schema
             }
         }
         

@@ -1,0 +1,15 @@
+<div id="<%= featureId(id) %>_container">
+<%
+    color = "#000000";
+    if (typeof pendingChange !== 'undefined') {
+        color = pendingChange;
+    } else if (typeof value !== 'undefined') {
+        color = value;
+    } else {
+        color = typeof schema.default !== 'undefined' ? schema.default : "#000000";
+    }
+%>
+<label for="<%= featureId(id) %>"><%= name %></label>
+<div class="input-group mb-3">
+<input data-pending-change="<%= pending_change %>" type="text" data-control-type="color" data-did="<%= did %>" data-fid="<%= id; %>" class="form-control colorpicker" id="<%= featureId(id) %>" value="<%= color %>"> </div>
+</div>
