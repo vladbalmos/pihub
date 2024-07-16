@@ -59,6 +59,8 @@ async function refreshView(deviceId, featureId, schema) {
 
         if (schema.type !== 'color') {
             $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
+        } else {
+            // $(`#${deviceId}_${featureId}_container`).find('input.colorpicker').minicolors('value', r.state.pendingChange || r.state.state || r.state.schema.default);
         }
 
         $('body').find('input.colorpicker').each((i, el) => {

@@ -60,7 +60,8 @@ function router(app, asyncMiddleware) {
             const view = yield uiBuilder.renderView(Object.assign(Object.assign({}, state), { did }));
             return res.json({
                 status: true,
-                content: view
+                content: view,
+                state
             });
         }
         catch (e) {

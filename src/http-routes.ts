@@ -62,7 +62,8 @@ export default function router(app: Application, asyncMiddleware: CallableFuncti
             });
             return res.json({
                 status: true,
-                content: view
+                content: view,
+                state
             });
         } catch (e: any) {
             logger.error(e);
