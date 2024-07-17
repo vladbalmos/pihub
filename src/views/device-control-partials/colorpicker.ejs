@@ -9,7 +9,28 @@
         color = typeof schema.default !== 'undefined' ? schema.default : "#000000";
     }
 %>
-<label for="<%= featureId(id) %>"><%= name %></label>
+<label for="<%= featureId(id) %>"><strong><%= name %></strong></label>
+<div class="d-flex">
+    <% 
+    const predefinedColors = {
+        "black": "#000000",
+        "white": "#ffffff",
+        "red": "#ff0000",
+        "green": "#00ff00",
+        "blue": "#0000ff",
+        "yellow": "#ffff00",
+        "cyan": "#00ffff",
+        "magenta": "#ff00ff",
+    }
+    
+    for (const name in predefinedColors) { 
+        const color = predefinedColors[name];
+        %>
+        <button type="button" class="btn-color colorpicker m-1" style="background-color: <%- color; %>" data-target="<%= featureId(id) %>">&nbsp;</button>
+        <%
+    }
+    %>
+</div>
 <div class="input-group mb-3">
 <input data-pending-change="<%= pending_change %>" type="text" data-control-type="color" data-did="<%= did %>" data-fid="<%= id; %>" class="form-control colorpicker" id="<%= featureId(id) %>" value="<%= color %>"> </div>
 </div>

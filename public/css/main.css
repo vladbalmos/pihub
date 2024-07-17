@@ -2,3 +2,27 @@ span.color {
     display: inline-block;
     width: 50px;
 }
+
+.btn-color {
+    display: block;
+    border: 1px #000 solid;
+    width: 2rem;
+    height: 2rem;
+}
+
+.minicolors-theme-default .minicolors-input {
+    height: 20px;
+    width: auto;
+    display: inline-block;
+    margin-left: 2.5rem;
+    margin-top: 5px;
+    height: 2rem;
+    padding-left: 0.5rem;
+}
+
+.minicolors-theme-default .minicolors-swatch {
+    top: 5px;
+    left: 5px;
+    width: 2rem;
+    height: 2rem;
+}

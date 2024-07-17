@@ -2,6 +2,15 @@
 
 const updateCallbacks = {};
 
+// Function to convert rgb to hex
+function rgbToHex(rgb) {
+    var result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    return "#" +
+        ("0" + parseInt(result[1], 10).toString(16)).slice(-2) +
+        ("0" + parseInt(result[2], 10).toString(16)).slice(-2) +
+        ("0" + parseInt(result[3], 10).toString(16)).slice(-2);
+}
+
 async function jsonRequest(url, data = null, options = {}) {
     options.headers = {
         ...(options.headers || {}),
@@ -60,7 +69,12 @@ async function refreshView(deviceId, featureId, schema) {
         if (schema.type !== 'color') {
             $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
         } else {
-            // $(`#${deviceId}_${featureId}_container`).find('input.colorpicker').minicolors('value', r.state.pendingChange || r.state.state || r.state.schema.default);
+            const value = r.state.pendingChange || r.state.value || r.state.schema.default;
+            $(`#${deviceId}_${featureId}_container`).find('input.colorpicker')
+                .data('stop-propagation', true)
+                .minicolors('value', value);
+            $(`#${deviceId}_${featureId}_container`).find('input.colorpicker')
+                .data('stop-propagation', false);
         }
 
         $('body').find('input.colorpicker').each((i, el) => {
@@ -161,17 +175,20 @@ function setList(caller, listId) {
 }
 
 function bindControls() {
-    // $.minicolors.defaults.control = 'brightness';
     $.minicolors.defaults.control = 'wheel';
-    $.minicolors.defaults.theme = 'bootstrap';
-    $.minicolors.defaults.change = function (color, opacity) {
+    $.minicolors.defaults.change = function (color) {
         const target = $(this);
         
         if (target.data('control-type') !== 'color') {
             return;
         }
-        
         clearTimeout(target.data('timeout'));
+        
+        if (target.data('stop-propagation')) {
+            target.data('stop-propagation', false);
+            return;
+        }
+        
         target.data('timeout', setTimeout(() => {
             const nextState = color;
             
@@ -239,6 +256,22 @@ function bindControls() {
     $('body').find('input.colorpicker').each((i, el) => {
         $(el).minicolors();
     });
+    
+    $('body').on('click', 'button.colorpicker', (e) => {
+        e.preventDefault();
+        const target = $(e.currentTarget);
+        if (!target.data('target')) {
+            return;
+        }
+        const colorPickerElement = $(`#${target.data('target')}`);
+        if (!colorPickerElement.minicolors('settings')) {
+            return;
+        }
+        
+        const color = rgbToHex(target.css('background-color'));
+        colorPickerElement.minicolors('value', color)
+    })
+
 }
 
 function delay(ms) {
