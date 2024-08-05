@@ -34,7 +34,8 @@ class UIBuilder {
                 }
                 views.push(yield this.renderView(Object.assign(Object.assign({}, feature), { did: device.id, dname: device.name })));
             }
-            return Object.assign(Object.assign({}, device), { views });
+            const ret = Object.assign(Object.assign({}, device), { views });
+            return ret;
         });
     }
     renderView(data) {
@@ -49,6 +50,8 @@ class UIBuilder {
         switch (schemaType) {
             case 'boolean':
                 return 'switch';
+            case 'json':
+                return 'codemirror';
             case 'list':
                 if (schema.item === 'string') {
                     return 'simple-list';

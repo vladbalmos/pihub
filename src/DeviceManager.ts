@@ -156,6 +156,7 @@ export default class DeviceManager extends EventEmitter {
             throw e;
         }
         
+
         for (const device of data) {
             const id = device[0];
             const deviceData = device[1];
@@ -274,8 +275,6 @@ export default class DeviceManager extends EventEmitter {
         if (updates.name) {
             device.name = updates.name;
         }
-        
-        console.log(device.lastSeen);
     }
     
     async requestStateUpdate(change) {
@@ -306,6 +305,7 @@ export default class DeviceManager extends EventEmitter {
                 state: change.value
             }
         });
+        
     }
     
     async getPendingUpdate(deviceId, featureId) {

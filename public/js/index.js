@@ -1,7 +1,5 @@
 'use strict';
 
-const updateCallbacks = {};
-
 // Function to convert rgb to hex
 function rgbToHex(rgb) {
     var result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
@@ -9,6 +7,21 @@ function rgbToHex(rgb) {
         ("0" + parseInt(result[1], 10).toString(16)).slice(-2) +
         ("0" + parseInt(result[2], 10).toString(16)).slice(-2) +
         ("0" + parseInt(result[3], 10).toString(16)).slice(-2);
+}
+
+function initCodemirror(el) {
+    const editor = CodeMirror.fromTextArea(el, {
+        model: {
+            name: "javascript",
+            json: true
+        },
+        lineNumbers: true,
+        indentUnit: 2,
+        autoCloseBrackets: true,
+        matchBrackets: true
+    });
+
+    $(el).data('editor', editor);
 }
 
 async function jsonRequest(url, data = null, options = {}) {
@@ -34,12 +47,6 @@ async function jsonRequest(url, data = null, options = {}) {
 }
 
 async function changeState(deviceId, featureId, value, onChangeCallback) {
-    let updateCallbackId
-    if (typeof onChangeCallback !== 'undefined') {
-        updateCallbackId = `${deviceId}:${featureId}`;
-        updateCallbacks[updateCallbackId] = onChangeCallback;
-    }
-    
     try {
         const result = await jsonRequest('/request-update', {
             deviceId,
@@ -48,11 +55,11 @@ async function changeState(deviceId, featureId, value, onChangeCallback) {
         })
 
         if (!result && updateCallbackId) {
-            delete updateCallbacks[updateCallbackId];
-            // onChangeCallback(new Error('Unable to request state update'));
+            typeof onChangeCallback === 'function ' && await onChangeCallback(new Error('Unable to request state update'));
+            return;
         }
 
-        // onChangeCallback(null, result);
+        typeof onChangeCallback === 'function ' && await onChangeCallback(null, result);
     } catch (e) {
         console.error(e);
         toastr.error('Unable change feature state');
@@ -65,21 +72,35 @@ async function refreshView(deviceId, featureId, schema) {
         if (!r.status) {
             return;
         }
-
-        if (schema.type !== 'color') {
-            $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);
-        } else {
+        
+        if (schema.type === 'color') {
             const value = r.state.pendingChange || r.state.value || r.state.schema.default;
             $(`#${deviceId}_${featureId}_container`).find('input.colorpicker')
                 .data('stop-propagation', true)
                 .minicolors('value', value);
             $(`#${deviceId}_${featureId}_container`).find('input.colorpicker')
                 .data('stop-propagation', false);
+
+        } else  if (schema.type === 'json') {
+            const value = r.state.pendingChange || r.state.value || r.state.schema.default;
+            const txtarea = $(`#${deviceId}_${featureId}_container`).find('textarea')
+            if (txtarea.data('editor')) {
+                txtarea.data('editor').setValue(value);
+                txtarea.parent().find('button').removeAttr('disabled');
+            }
+        } else {
+            $(`#${deviceId}_${featureId}_container`).replaceWith(r.content);    
         }
 
         $('body').find('input.colorpicker').each((i, el) => {
             if (!$(el).minicolors('settings')) {
                $(el).minicolors() 
+            }
+        });
+        
+        $('body').find('textarea[data-control-type="json"]').each((_, el) => {
+            if (!$(el).data('editor')) {
+                initCodemirror(el)
             }
         });
     } catch (e) {
@@ -271,6 +292,47 @@ function bindControls() {
         const color = rgbToHex(target.css('background-color'));
         colorPickerElement.minicolors('value', color)
     })
+    
+    $('body').find('textarea[data-control-type="json"]').each((_, el) => {
+        initCodemirror(el)
+    });
+
+    $('body').on('click', 'button[data-save-btn="1"]', (e) => {
+        e.preventDefault();
+        const target = $(e.currentTarget);
+        
+        const targetFeature = target.data('target');
+        if (!targetFeature) {
+            console.warn("Missing target feature");
+            return;
+        }
+        
+        const targetElement = document.getElementById(targetFeature);
+        if (!targetElement) {
+            console.error("Target element not found!");
+            return;
+        }
+        
+        try {
+            const value = $(targetElement).data('editor').getValue();
+            try {
+                JSON.parse(value);
+            } catch (e) {
+                toastr.error('Invalid JSON');
+                return;
+            }
+            
+            const { did, featureId } = describe($(targetElement));
+            target.prop('disabled', true);
+            
+            changeState(did, featureId, value, (err, result) => {
+                target.prop('disabled', false);
+            });
+        } catch (e) {
+            console.error(e);
+            return;
+        }
+    });
 
 }
 
@@ -281,7 +343,7 @@ function delay(ms) {
 }
 
 async function startPolling() {
-    const DELAY = 100;
+    const DELAY = 500;
     while (true) {
         let result;
         try {

@@ -19,7 +19,6 @@ if (process.env.NODE_ENV !== 'production') {
         handleExceptions: true,
         format: winston.format.combine(
             winston.format.splat(),
-            winston.format.simple(),
         ),
     }));
 }

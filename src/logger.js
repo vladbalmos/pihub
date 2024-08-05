@@ -17,7 +17,7 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(new winston_1.default.transports.Console({
         handleRejections: true,
         handleExceptions: true,
-        format: winston_1.default.format.combine(winston_1.default.format.splat(), winston_1.default.format.simple()),
+        format: winston_1.default.format.combine(winston_1.default.format.splat()),
     }));
 }
 exports.default = logger;

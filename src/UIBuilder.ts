@@ -38,13 +38,13 @@ export default class UIBuilder {
             }));
         }
         
-        return { ...device, views };
+        const ret =  { ...device, views };
+        return ret;
     }
     
     
     async renderView(data) {
         const partialName = this.partialName(data.schema);
-
         const content = await this.render(partialName, data);
         return content;
     }
@@ -55,6 +55,8 @@ export default class UIBuilder {
         switch (schemaType) {
             case 'boolean':
                 return 'switch';
+            case 'json':
+                return 'codemirror';
             case 'list':
                 if (schema.item === 'string') {
                     return 'simple-list';

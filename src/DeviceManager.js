@@ -231,7 +231,6 @@ class DeviceManager extends events_1.default {
         if (updates.name) {
             device.name = updates.name;
         }
-        console.log(device.lastSeen);
     }
     requestStateUpdate(change) {
         return __awaiter(this, void 0, void 0, function* () {
