@@ -28,6 +28,7 @@ import logger from "../logger";
         try {
             await DeviceManager.inst.updateFeatureState(deviceId, featureId, state);
         } catch (e) {
+            console.error(e);
             logger.error(e);
         }
         logger.info("State updated for %s %s %s", deviceId, featureId, state)

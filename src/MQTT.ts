@@ -30,11 +30,11 @@ export default class MQTT extends EventEmitter{
         this.deviceTopics = devicesTopics;
         
         this.subscriptionOptions = {
-            qos: 1,
+            qos: 0,
         }
         
         this.publishingOptions = {
-            qos: 1
+            qos: 0
         }
     }
     
@@ -94,7 +94,7 @@ export default class MQTT extends EventEmitter{
             payload
         }), {
             ...this.publishingOptions,
-            retain: true
+            retain: false
         });
     }
     

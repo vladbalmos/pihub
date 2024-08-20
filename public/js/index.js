@@ -16,7 +16,7 @@ function initCodemirror(el) {
             json: true
         },
         lineNumbers: true,
-        indentUnit: 2,
+        indentUnit: 4,
         autoCloseBrackets: true,
         matchBrackets: true
     });
@@ -82,8 +82,11 @@ async function refreshView(deviceId, featureId, schema) {
                 .data('stop-propagation', false);
 
         } else  if (schema.type === 'json') {
-            const value = r.state.pendingChange || r.state.value || r.state.schema.default;
+            let value = r.state.pendingChange || r.state.value || r.state.schema.default;
             const txtarea = $(`#${deviceId}_${featureId}_container`).find('textarea')
+            if (typeof value === 'object') {
+                value = JSON.stringify(value, null, 2);
+            }
             if (txtarea.data('editor')) {
                 txtarea.data('editor').setValue(value);
                 txtarea.parent().find('button').removeAttr('disabled');

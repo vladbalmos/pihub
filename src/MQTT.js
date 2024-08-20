@@ -24,10 +24,10 @@ class MQTT extends events_1.default {
         this.responseTopic = options.responseTopic;
         this.deviceTopics = devicesTopics;
         this.subscriptionOptions = {
-            qos: 1,
+            qos: 0,
         };
         this.publishingOptions = {
-            qos: 1
+            qos: 0
         };
     }
     initialize() {
@@ -82,7 +82,7 @@ class MQTT extends events_1.default {
         return (_a = this.client) === null || _a === void 0 ? void 0 : _a.publish(topic, JSON.stringify({
             request: 'state-update',
             payload
-        }), Object.assign(Object.assign({}, this.publishingOptions), { retain: true }));
+        }), Object.assign(Object.assign({}, this.publishingOptions), { retain: false }));
     }
     discover() {
         var _a;

@@ -2,6 +2,10 @@
 <%
     if (typeof value === "undefined") {
         value = schema.default || '';
+        
+    }
+    if (typeof value === 'object') {
+        value = JSON.stringify(value, null, 2)
     }
 %>
     <label class="form-label" for="<%= featureId(id); %>"><%= name %></label>

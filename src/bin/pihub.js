@@ -37,6 +37,7 @@ const logger_1 = __importDefault(require("../logger"));
                 yield DeviceManager_1.default.inst.updateFeatureState(deviceId, featureId, state);
             }
             catch (e) {
+                console.error(e);
                 logger_1.default.error(e);
             }
             logger_1.default.info("State updated for %s %s %s", deviceId, featureId, state);
